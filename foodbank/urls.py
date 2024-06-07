@@ -1,7 +1,8 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
-from .views import home_view, volunteer_view
+from . import views
 
+app_name = 'foodbank'
 urlpatterns = [
     path('', views.home_view, name='home'),
     path('sign_up/', views.sign_up_view, name='sign_up'),
