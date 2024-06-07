@@ -1,0 +1,78 @@
+<!-- volunteer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteers</title>
+</head>
+<body>
+    <h1>Volunteers</h1>
+    <form method="GET" action="{% url 'foodbank:volunteer' %}">
+        <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Street Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Zip Code</th>
+                <th>Phone Number</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for volunteer in volunteers %}
+            <tr>
+                <td>{{ volunteer.first_name }}</td>
+                <td>{{ volunteer.last_name }}</td>
+                <td>{{ volunteer.street_address }}</td>
+                <td>{{ volunteer.city }}</td>
+                <td>{{ volunteer.home_state }}</td>
+                <td>{{ volunteer.zip_code }}</td>
+                <td>{{ volunteer.phone_number }}</td>
+                <td>{{ volunteer.email }}</td>
+                <td>
+                    <form method="POST" action="{% url 'foodbank:volunteer' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="volunteer_id" value="{{ volunteer.id }}">
+                        <button type="submit" name="edit">Edit</button>
+                        <button type="submit" name="delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Add Volunteer</h2>
+<form method="POST" action="{% url 'foodbank:volunteer' %}">
+    {% csrf_token %}
+    <label for="first_name">First Name:</label>
+    <input type="text" id="first_name" name="first_name"><br>
+    <label for="last_name">Last Name:</label>
+    <input type="text" id="last_name" name="last_name"><br>
+    <label for="street_address">Street Address:</label>
+    <input type="text" id="street_address" name="street_address"><br>
+    <label for="city">City:</label>
+    <input type="text" id="city" name="city"><br>
+    <label for="home_state">State:</label>
+    <input type="text" id="home_state" name="home_state"><br>
+    <label for="zip_code">Zip Code:</label>
+    <input type="text" id="zip_code" name="zip_code"><br>
+    <label for="phone_number">Phone Number:</label>
+    <input type="text" id="phone_number" name="phone_number"><br>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email"><br>
+    <!-- Add other fields for new volunteer here -->
+    <button type="submit" name="add">Add Volunteer</button>
+</form>
+
+
+</body>
+</html>
