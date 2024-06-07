@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
-from .models import Volunteer
+from .models import Volunteer, FoodBank
 from django.db.models import Q
 
 @login_required
@@ -90,3 +90,58 @@ def volunteer_delete(request):
         volunteer = get_object_or_404(Volunteer, id=volunteer_id)
         volunteer.delete()
     return redirect('volunteer')
+
+def foodbank_view(request):
+    foodbanks = FoodBank.objects.all()
+
+    query = request.GET.get('q')
+    if query:
+        foodbanks = foodbanks.filter(
+            Q(street_address__icontains=query) |
+            Q(city__icontains=query) |
+            Q(state__icontains=query) |
+            Q(phone_number__icontains=query) |
+            Q(email__icontains=query)
+        )
+
+    if request.method == 'POST':
+        street_address = request.POST.get('street_address')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+
+        foodbank_id = request.POST.get('foodbank_id')  # Get the ID of the food bank
+
+        if foodbank_id:  # If the ID exists, update the existing entry
+            foodbank = FoodBank.objects.get(id=foodbank_id)
+            foodbank.street_address = street_address
+            foodbank.city = city
+            foodbank.state = state
+            foodbank.phone_number = phone_number
+            foodbank.email = email
+            foodbank.save()
+        else:  # If the ID does not exist, create a new entry
+            FoodBank.objects.create(
+                street_address=street_address,
+                city=city,
+                state=state,
+                phone_number=phone_number,
+                email=email
+            )
+
+        return redirect('foodbank')
+
+    context = {
+        'foodbanks': foodbanks,
+        'query': query,
+    }
+    return render(request, 'foodbank.html', context)
+
+
+def foodbank_delete(request):
+    if request.method == 'POST':
+        foodbank_id = request.POST.get('foodbank_id')
+        foodbank = get_object_or_404(FoodBank, id=foodbank_id)
+        foodbank.delete()
+    return redirect('foodbank')
