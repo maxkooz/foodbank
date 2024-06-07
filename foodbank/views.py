@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
 from .models import Volunteer
@@ -73,4 +73,9 @@ def volunteer_edit_view(request):
         volunteer.save()
         return redirect('volunteer')
     return redirect('home')  # Redirect to home if not a POST request
-
+def volunteer_delete(request):
+    if request.method == 'POST':
+        volunteer_id = request.POST.get('volunteer_id')
+        volunteer = get_object_or_404(Volunteer, id=volunteer_id)
+        volunteer.delete()
+    return redirect('volunteer')
