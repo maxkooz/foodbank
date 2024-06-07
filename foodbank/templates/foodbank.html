@@ -1,0 +1,74 @@
+<!-- volunteer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Banks</title>
+</head>
+<body>
+    <h1>Food Banks</h1>
+    <form method="GET" action="{% url 'foodbank:foodbanks' %}">
+        <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Street Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Zip Code</th>
+                <th>Manager</th>
+                <th>Phone Number</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fb in food_banks %}
+            <tr>
+                <td>{{ fb.street_address }}</td>
+                <td>{{ fb.city }}</td>
+                <td>{{ fb.home_state }}</td>
+                <td>{{ fb.zip_code }}</td>
+                <td>{{ fb.manager }}</td>
+                <td>{{ fb.phone_number }}</td>
+                <td>{{ fb.email }}</td>
+                <td>
+                    <form method="POST" action="{% url 'foodbank:foodbanks' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="foodbank_id" value="{{ fb.id }}">
+                        <button type="submit" name="edit">Edit</button>
+                        <button type="submit" name="delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Add Food Bank</h2>
+<form method="POST" action="{% url 'foodbank:foodbanks' %}">
+    {% csrf_token %}
+    <label for="street_address">Street Address:</label>
+    <input type="text" id="street_address" name="street_address"><br>
+    <label for="city">City:</label>
+    <input type="text" id="city" name="city"><br>
+    <label for="home_state">State:</label>
+    <input type="text" id="home_state" name="home_state"><br>
+    <label for="zip_code">Zip Code:</label>
+    <input type="text" id="zip_code" name="zip_code"><br>
+    <label for="manager">Manager:</label>
+    <input type="number" id="manager" name="manager"><br>
+    <label for="phone_number">Phone Number:</label>
+    <input type="text" id="phone_number" name="phone_number"><br>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email"><br>
+    <!-- Add other fields for new food bank here -->
+    <button type="submit" name="add">Add Food Bank</button>
+</form>
+
+
+</body>
+</html>

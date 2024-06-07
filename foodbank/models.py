@@ -1,10 +1,5 @@
 from django.db import models
 
-# Create your models here.
-from django.db import models
-
-from django.db import models
-
 class Volunteer(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -18,8 +13,9 @@ class Volunteer(models.Model):
 class FoodBank(models.Model):
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
-    state = models.CharField(max_length=50)
-    manager = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    home_state = models.CharField(max_length=50)
+    zip_code = models.CharField(max_length=20, default="00000")
+    manager = models.ForeignKey(Volunteer, on_delete=models.PROTECT)
     phone_number = models.CharField(max_length=20)
     email = models.CharField(max_length=100)
 

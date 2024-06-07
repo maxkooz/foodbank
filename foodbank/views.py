@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views import generic
 
-from .models import Volunteer
+from .models import Volunteer, FoodBank
 
 import re
 
@@ -126,49 +126,66 @@ class VolunteerView(generic.ListView):
             return False
 
 
-def volunteer_view(request):
-    volunteers = Volunteer.objects.all()
+class FoodBankView(generic.ListView):
+    model=FoodBank
+    context_object_name='food_banks'
+    template_name='foodbank.html'
 
-    query = request.GET.get('q')
-    if query:
-        volunteers = volunteers.filter(first_name__icontains=query)
+    def get_queryset(self):
+        return FoodBank.objects.all()
+    
+    def get(self, req):
+        error_msg = req.GET['error_msg'] if 'error_msg' in req.GET else None
+        context = {
+            self.context_object_name: self.get_queryset(),
+            'error_msg': error_msg,
+        }
 
-    if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        street_address = request.POST.get('street_address')
-        city = request.POST.get('city')
-        home_state = request.POST.get('home_state')
-        zip_code = request.POST.get('zip_code')
-        phone_number = request.POST.get('phone_number')
-        email = request.POST.get('email')
+        return render(req, self.template_name, context)
+    
+    def post(self, request, *args, **kwargs):
+        street_address = request.POST["street_address"]
+        city = request.POST["city"]
+        home_state = request.POST["home_state"]
+        zip_code = request.POST["zip_code"]
+        manager = request.POST["manager"]
+        phone_number = request.POST["phone_number"]
+        email = request.POST["email"]
 
-        # Check that at least one field is not empty
-        if any([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email]):
-            Volunteer.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                street_address=street_address,
-                city=city,
-                home_state=home_state,
-                zip_code=zip_code,
-                phone_number=phone_number,
-                email=email
-            )
-        elif 'edit' in request.POST:
-            volunteer_id = request.POST.get('volunteer_id')
-            volunteer = Volunteer.objects.get(id=volunteer_id)
-            volunteer.first_name = request.POST.get('first_name')
-            # Update other fields for editing
-            volunteer.save()
-        elif 'delete' in request.POST:
-            volunteer_id = request.POST.get('volunteer_id')
-            Volunteer.objects.get(id=volunteer_id).delete()
+        if self.validateTextFields([street_address, city, home_state, zip_code, phone_number, email]) and self.validateForeignKey(manager):
+            if 'add' in request.POST:
+                FoodBank.objects.create(
+                    street_address=street_address,
+                    city=city,
+                    home_state=home_state,
+                    manager=Volunteer.objects.get(pk=manager),
+                    phone_number=phone_number,
+                    email=email
+                )
+            elif 'edit' in request.POST:
+                foodbank_id = request.POST.get('foodbank_id')
+                foodbank = FoodBank.objects.get(id=foodbank_id)
+                foodbank.street_address = street_address
+                # Update other fields for editing
+                foodbank.save()
+            elif 'delete' in request.POST:
+                foodbank_id = request.POST.get('foodbank_id')
+                FoodBank.objects.get(id=foodbank_id).delete()
+            
+            return redirect(reverse('foodbank:foodbanks'))
+        else:
+            error_msg = 'All fields are required to create object'
+            return redirect(reverse("foodbank:foodbanks")+'?error_msg='+error_msg)
 
-        return redirect(reverse("foodbank:volunteer"))
 
-    context = {
-        'volunteers': volunteers,
-        'query': query,
-    }
-    return render(request, 'volunteer.html', context)
+    def validateTextFields(self, fields):
+        for field in fields:
+            if field == "":
+                return False
+            
+        return True
+    
+    def validateForeignKey(self, fk):
+        if Volunteer.objects.filter(pk=fk).exists():
+            return True
+        return False

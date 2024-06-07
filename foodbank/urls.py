@@ -10,4 +10,5 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('main_page/', views.main_page_view, name='main_page'),
     path('volunteer/', views.VolunteerView.as_view(), name='volunteer'),
+    path('foodbanks/', views.FoodBankView.as_view(), name='foodbanks')
 ]
