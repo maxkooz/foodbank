@@ -9,7 +9,7 @@
 </head>
 <body>
     <h1>Volunteers</h1>
-    <form method="GET" action="{% url 'foodbank:volunteer' %}">
+    <form method="GET" action="{% url 'volunteer' %}">
         <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
@@ -39,7 +39,7 @@
                 <td>{{ volunteer.phone_number }}</td>
                 <td>{{ volunteer.email }}</td>
                 <td>
-                    <form method="POST" action="{% url 'foodbank:volunteer' %}">
+                    <form method="POST" action="{% url 'volunteer' %}">
                         {% csrf_token %}
                         <input type="hidden" name="volunteer_id" value="{{ volunteer.id }}">
                         <button type="submit" name="edit">Edit</button>
@@ -51,7 +51,7 @@
         </tbody>
     </table>
     <h2>Add Volunteer</h2>
-<form method="POST" action="{% url 'foodbank:volunteer' %}">
+<form method="POST" action="{% url 'volunteer' %}">
     {% csrf_token %}
     <label for="first_name">First Name:</label>
     <input type="text" id="first_name" name="first_name"><br>
