@@ -54,3 +54,23 @@ def volunteer_view(request):
     }
     return render(request, 'volunteer.html', context)
 
+# views.py
+from django.shortcuts import render, redirect
+from .models import Volunteer
+
+def volunteer_edit_view(request):
+    if request.method == 'POST':
+        volunteer_id = request.POST.get('volunteer_id')
+        volunteer = Volunteer.objects.get(id=volunteer_id)
+        volunteer.first_name = request.POST.get('first_name')
+        volunteer.last_name = request.POST.get('last_name')
+        volunteer.street_address = request.POST.get('street_address')
+        volunteer.city = request.POST.get('city')
+        volunteer.home_state = request.POST.get('home_state')
+        volunteer.zip_code = request.POST.get('zip_code')
+        volunteer.phone_number = request.POST.get('phone_number')
+        volunteer.email = request.POST.get('email')
+        volunteer.save()
+        return redirect('volunteer')
+    return redirect('home')  # Redirect to home if not a POST request
+
