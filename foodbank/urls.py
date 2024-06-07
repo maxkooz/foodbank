@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
+
 from . import views
 
 app_name = 'foodbank'
@@ -9,4 +10,5 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('main_page/', views.main_page_view, name='main_page'),
+    path('volunteer/', views.volunteer_view, name='volunteer'),
 ]
