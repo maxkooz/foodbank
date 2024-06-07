@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
 from .models import Volunteer
+from django.db.models import Q
+
 @login_required
 def home_view(request):
     return render(request, 'home.html')
@@ -12,7 +14,16 @@ def volunteer_view(request):
 
     query = request.GET.get('q')
     if query:
-        volunteers = volunteers.filter(first_name__icontains=query)
+        volunteers = volunteers.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(street_address__icontains=query) |
+            Q(city__icontains=query) |
+            Q(home_state__icontains=query) |
+            Q(zip_code__icontains=query) |
+            Q(phone_number__icontains=query) |
+            Q(email__icontains=query)
+        )
 
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
