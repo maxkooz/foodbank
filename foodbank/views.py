@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 # Create your views here.iuhiuhi
 from django.shortcuts import render
 from .models import Volunteer
+@login_required
 def home_view(request):
     return render(request, 'home.html')
 
@@ -51,3 +53,4 @@ def volunteer_view(request):
         'query': query,
     }
     return render(request, 'volunteer.html', context)
+

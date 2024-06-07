@@ -100,7 +100,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = 'main_page'
+from django.urls import reverse_lazy
+
+LOGIN_REDIRECT_URL = reverse_lazy('main_page')
+
 
 
 
