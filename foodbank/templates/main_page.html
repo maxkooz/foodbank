@@ -3,70 +3,46 @@
 <head>
     <title>Foodbank Main Page</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
-
         body {
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: 'Libre Baskerville', serif;
-            background-color: #add8e6;
-        }
-        .header {
-            font-size: 36px;
-            margin-bottom: 20px;
-            color: #1d3557;
-            text-align: center;
-        }
-        .subheader {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #ffffff;
-            text-align: center;
+            font-family: Arial, sans-serif;
         }
         .button-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            width: 80%;
+            justify-content: space-around; /* Optional: adjust as needed */
         }
         .button-container button {
             margin: 10px;
             padding: 15px 30px;
             font-size: 16px;
             cursor: pointer;
-            width: calc(33.33% - 20px);
+            width: calc(33.33% - 20px); /* Adjust width based on the number of buttons in a row */
             box-sizing: border-box;
-            border: none;
-            border-radius: 5px;
-            background-color: #FFDBBB;
-            color: darkorange;
-            transition: background-color 0.3s ease;
-        }
-        .button-container button:hover {
-            background-color: #0056b3;
-            color: white;
         }
     </style>
 </head>
 <body>
-<div class="header">Foodbank Management System</div>
-<div class="subheader">Welcome to the Foodbank Main Page</div>
-<div class="button-container">
-    <button onclick="location.href='#'">Volunteer</button>
-    <button onclick="location.href='#'">Vehicle</button>
-    <button onclick="location.href='#'">Transit Schedule</button>
-    <button onclick="location.href='#'">Individual Shifts</button>
-    <button onclick="location.href='#'">Tasks</button>
-    <button onclick="location.href='#'">Food Bank</button>
-    <button onclick="location.href='#'">Food Items</button>
-    <button onclick="location.href='#'">Food Group</button>
-    <button onclick="location.href='#'">Donator</button>
-    <button onclick="location.href='#'">Distributed Food Items</button>
-    <button onclick="location.href='#'">Recipient Organization</button>
-</div>
+    <div class="button-container">
+        <button onclick="location.href='{% url 'volunteer' %}'">Volunteer</button>
+        <button onclick="location.href='#'">Vehicle</button>
+        <button onclick="location.href='#'">Transit Schedule</button>
+        <button onclick="location.href='#'">Individual Shifts</button>
+        <button onclick="location.href='#'">Tasks</button>
+        <button onclick="location.href='#'">Food Bank</button>
+        <button onclick="location.href='#'">Food Items</button>
+        <button onclick="location.href='#'">Food Group</button>
+        <button onclick="location.href='#'">Donator</button>
+        <button onclick="location.href='#'">Distributed Food Items</button>
+        <button onclick="location.href='#'">Recipient Organization</button>
+    </div>
+
+    <div>
+        <a href="{% url 'foodbank:logout' %}">Logout</a>
+    </div>
 </body>
 </html>
