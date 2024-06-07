@@ -1,0 +1,68 @@
+<!-- task.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+</head>
+<body>
+    <h1>Tasks</h1>
+    <form method="GET">
+        <label for="q">Search:</label>
+        <input type="text" id="q" name="q" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Start Date Time</th>
+                <th>End Date Time</th>
+                <th>Associated Food Bank</th>
+                <th>Min Volunteers</th>
+                <th>Max Volunteers</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <td><input type="text" name="description" value="{{ task.description }}"></td>
+                    <td><input type="datetime-local" name="start_date_time" value="{{ task.start_date_time|date:'Y-m-d\TH:i' }}"></td>
+                    <td><input type="datetime-local" name="end_date_time" value="{{ task.end_date_time|date:'Y-m-d\TH:i' }}"></td>
+                    <td><input type="text" name="associated_food_bank" value="{{ task.associated_food_bank }}"></td>
+                    <td><input type="number" name="min_volunteers" value="{{ task.min_volunteers }}"></td>
+                    <td><input type="number" name="max_volunteers" value="{{ task.max_volunteers }}"></td>
+                    <td>
+                        <button type="submit" name="save">Save</button>
+                        <button type="submit" formaction="{% url 'task_delete' %}" name="delete">Delete</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Add Task</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description"><br>
+        <label for="start_date_time">Start Date Time:</label>
+        <input type="datetime-local" id="start_date_time" name="start_date_time"><br>
+        <label for="end_date_time">End Date Time:</label>
+        <input type="datetime-local" id="end_date_time" name="end_date_time"><br>
+        <label for="associated_food_bank">Associated Food Bank:</label>
+        <input type="text" id="associated_food_bank" name="associated_food_bank"><br>
+        <label for="min_volunteers">Min Volunteers:</label>
+        <input type="number" id="min_volunteers" name="min_volunteers"><br>
+        <label for="max_volunteers">Max Volunteers:</label>
+        <input type="number" id="max_volunteers" name="max_volunteers"><br>
+        <button type="submit" name="add">Add Task</button>
+    </form>
+</body>
+</html>

@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
-from .views import home_view, volunteer_view, volunteer_edit_view, volunteer_delete, foodbank_view, foodbank_delete
+from .views import home_view, volunteer_view, volunteer_edit_view, volunteer_delete, foodbank_view, foodbank_delete, \
+    task_view, task_delete
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -10,5 +11,6 @@ urlpatterns = [
     path('volunteer/delete/', volunteer_delete, name='volunteer_delete'),
     path('foodbank/', foodbank_view, name='foodbank'),
     path('foodbank/delete/', foodbank_delete, name='foodbank_delete'),
-
+path('task/', task_view, name='task'),
+    path('task/delete/', task_delete, name='task_delete'),
 ]

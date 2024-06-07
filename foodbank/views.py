@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
-from .models import Volunteer, FoodBank
+from .models import Volunteer, FoodBank, Task
 from django.db.models import Q
 
 @login_required
@@ -145,3 +146,40 @@ def foodbank_delete(request):
         foodbank = get_object_or_404(FoodBank, id=foodbank_id)
         foodbank.delete()
     return redirect('foodbank')
+
+def task_view(request):
+    if request.method == 'POST':
+        # Get form data
+        task_name = request.POST.get('task_name')
+        task_description = request.POST.get('task_description')
+        foodbank_id = request.POST.get('foodbank_id')  # Assuming this is the ID of the associated FoodBank
+
+        # Get FoodBank instance
+        foodbank = FoodBank.objects.get(id=foodbank_id)
+
+        # Create or update Task instance
+        task_id = request.POST.get('task_id')
+        if task_id:
+            task = Task.objects.get(id=task_id)
+            task.task_name = task_name
+            task.task_description = task_description
+            task.associated_food_bank = foodbank
+            task.save()
+        else:
+            Task.objects.create(
+                task_name=task_name,
+                task_description=task_description,
+                associated_food_bank=foodbank
+            )
+
+        return redirect('task_list')  # Redirect to task list view
+
+    # If not a POST request, render the form
+    return render(request, 'task.html')
+
+def task_delete(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        task = get_object_or_404(Task, id=task_id)
+        task.delete()
+    return redirect('home')  # Redirect to the main page after deleting the task
