@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
-from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule
+from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem
 from django.db.models import Q
 
 @login_required
@@ -353,3 +355,67 @@ def transit_delete(request):
         transit_schedule = get_object_or_404(TransitSchedule, id=transit_id)
         transit_schedule.delete()
     return redirect('transit')
+
+def fooditem_view(request):
+    fooditems = FoodItem.objects.all()
+
+    query = request.GET.get('q')
+    if query:
+        fooditems = fooditems.filter(
+            Q(name__icontains=query) |
+            Q(food_group__icontains=query) |
+            Q(expiration_date__icontains=query) |
+            Q(item_size__icontains=query) |
+            Q(associated_food_bank__street_address__icontains=query) |
+            Q(donator__icontains=query)
+        )
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        food_group = request.POST.get('food_group')
+        expiration_date = request.POST.get('expiration_date')
+        item_size = request.POST.get('item_size')
+        associated_food_bank_id = request.POST.get('associated_food_bank')
+        donator = request.POST.get('donator')
+
+        expiration_date = request.POST.get('expiration_date')
+        if expiration_date:  # Ensure expiration date is not empty
+            expiration_date = datetime.strptime(expiration_date,
+                                                '%Y-%m-%d').date()  # Parse the date string to a date object
+
+        fooditem_id = request.POST.get('fooditem_id')  # Get the ID of the food item
+
+        if fooditem_id:  # If the ID exists, update the existing entry
+            fooditem = FoodItem.objects.get(id=fooditem_id)
+            fooditem.name = name
+            fooditem.food_group = food_group
+            fooditem.expiration_date = expiration_date
+            fooditem.item_size = item_size
+            fooditem.associated_food_bank_id = associated_food_bank_id
+            fooditem.donator = donator
+            fooditem.save()
+        else:  # If the ID does not exist, create a new entry
+            FoodItem.objects.create(
+                name=name,
+                food_group=food_group,
+                expiration_date=expiration_date,
+                item_size=item_size,
+                associated_food_bank_id=associated_food_bank_id,
+                donator=donator
+            )
+
+        return redirect('fooditem')
+
+    context = {
+        'fooditems': fooditems,
+        'query': query,
+        'foodbanks': FoodBank.objects.all()
+    }
+    return render(request, 'fooditem.html', context)
+
+def fooditem_delete(request):
+    if request.method == 'POST':
+        fooditem_id = request.POST.get('fooditem_id')
+        fooditem = get_object_or_404(FoodItem, id=fooditem_id)
+        fooditem.delete()
+    return redirect('fooditem')

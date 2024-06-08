@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib.auth.views import LoginView
 from .views import home_view, volunteer_view, volunteer_edit_view, volunteer_delete, foodbank_view, foodbank_delete, \
     task_view, task_delete, individual_shift_view, individual_shift_delete, vehicle_view, vehicle_delete, transit_view, \
-    transit_delete
+    transit_delete, fooditem_view, fooditem_delete
 
 urlpatterns = [
     path('', LoginView.as_view(template_name='home.html'), name='home'),
@@ -21,4 +21,6 @@ urlpatterns = [
     path('vehicle/delete/', vehicle_delete, name='vehicle_delete'),
     path('transit/', transit_view, name='transit'),
     path('transit/delete/', transit_delete, name='transit_delete'),
+    path('fooditem/', fooditem_view, name='fooditem'),
+    path('fooditem/delete/', fooditem_delete, name='fooditem_delete'),
 ]
