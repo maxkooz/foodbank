@@ -12,8 +12,9 @@
     <form method="GET">
         <label for="q">Search:</label>
         <input type="text" id="q" name="q" value="{{ query }}">
-        <button type="submit">Search</button>
+        <button type="submit" formaction="{% url 'transit_capacity' %}" name="capacity">Search</button>
     </form>
+
     <table border="1">
         <thead>
             <tr>
