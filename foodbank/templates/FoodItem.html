@@ -32,7 +32,14 @@
                     {% csrf_token %}
                     <input type="hidden" name="fooditem_id" value="{{ fooditem.id }}">
                     <td><input type="text" name="name" value="{{ fooditem.name }}"></td>
-                    <td><input type="text" name="food_group" value="{{ fooditem.food_group }}"></td>
+                    <td>
+                        <select name="food_group">
+                            <option value="">Select Food Group</option>
+                            {% for group in food_groups %}
+                                <option value="{{ group.id }}" {% if fooditem.food_group_id == group.id %} selected {% endif %}>{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td><input type="date" name="expiration_date" value="{{ fooditem.expiration_date|date:'Y-m-d' }}"></td>
                     <td><input type="text" name="item_size" value="{{ fooditem.item_size }}"></td>
                     <td>
@@ -43,7 +50,14 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><input type="text" name="donator" value="{{ fooditem.donator }}"></td>
+                    <td>
+                        <select name="donator">
+                            <option value="">Select Donator</option>
+                            {% for donator in donators %}
+                                <option value="{{ donator.id }}" {% if fooditem.donator_id == donator.id %} selected {% endif %}>{{ donator.first_name }} {{ donator.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td>
                         <button type="submit" name="save">Save</button>
                         <button type="submit" formaction="{% url 'fooditem_delete' %}" name="delete">Delete</button>
@@ -59,7 +73,12 @@
         <label for="name">Name:</label>
         <input type="text" id="name" name="name"><br>
         <label for="food_group">Food Group:</label>
-        <input type="text" id="food_group" name="food_group"><br>
+        <select id="food_group" name="food_group">
+            <option value="">Select Food Group</option>
+            {% for group in food_groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+            {% endfor %}
+        </select><br>
         <label for="expiration_date">Expiration Date:</label>
         <input type="date" id="expiration_date" name="expiration_date"><br>
         <label for="item_size">Item Size:</label>
@@ -72,7 +91,12 @@
             {% endfor %}
         </select><br>
         <label for="donator">Donator:</label>
-        <input type="text" id="donator" name="donator"><br>
+        <select id="donator" name="donator">
+            <option value="">Select Donator</option>
+            {% for donator in donators %}
+                <option value="{{ donator.id }}">{{ donator.first_name }} {{ donator.last_name }}</option>
+            {% endfor %}
+        </select><br>
         <button type="submit" name="add">Add Food Item</button>
     </form>
 </body>

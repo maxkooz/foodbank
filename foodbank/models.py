@@ -47,14 +47,24 @@ class TransitSchedule(models.Model):
     departure_period_of_operation = models.DateTimeField()
     current_available_capacity = models.IntegerField()
 
+class Donator(models.Model):
+    id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=20)
+    email = models.CharField(max_length=100)
+class FoodGroup(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
 class FoodItem(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
-    food_group = models.CharField(max_length=50)
+    food_group = models.ForeignKey(FoodGroup, on_delete=models.CASCADE)
     expiration_date = models.DateField()
     item_size = models.CharField(max_length=255)
     associated_food_bank = models.ForeignKey(FoodBank, on_delete=models.CASCADE, null=True, blank=True)
-    donator = models.CharField(max_length=255)
+    donator = models.ForeignKey(Donator, on_delete=models.CASCADE)
+
 
 class DistributedFoodItem(models.Model):
     id = models.AutoField(primary_key=True)

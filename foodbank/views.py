@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
 from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem, \
-    RecipientOrganization, DistributedFoodItem
+    RecipientOrganization, DistributedFoodItem, Donator, FoodGroup
 from django.db.models import Q
 
 @login_required
@@ -359,50 +359,50 @@ def transit_delete(request):
 
 def fooditem_view(request):
     fooditems = FoodItem.objects.all()
+    donators = Donator.objects.all()
+    food_groups = FoodGroup.objects.all()
 
     query = request.GET.get('q')
     if query:
         fooditems = fooditems.filter(
             Q(name__icontains=query) |
-            Q(food_group__icontains=query) |
+            Q(food_group__name__icontains=query) |
             Q(expiration_date__icontains=query) |
             Q(item_size__icontains=query) |
             Q(associated_food_bank__street_address__icontains=query) |
-            Q(donator__icontains=query)
+            Q(donator__first_name__icontains=query) |
+            Q(donator__last_name__icontains=query)
         )
 
     if request.method == 'POST':
         name = request.POST.get('name')
-        food_group = request.POST.get('food_group')
+        food_group_id = request.POST.get('food_group')
         expiration_date = request.POST.get('expiration_date')
         item_size = request.POST.get('item_size')
         associated_food_bank_id = request.POST.get('associated_food_bank')
-        donator = request.POST.get('donator')
+        donator_id = request.POST.get('donator')
 
-        expiration_date = request.POST.get('expiration_date')
-        if expiration_date:  # Ensure expiration date is not empty
-            expiration_date = datetime.strptime(expiration_date,
-                                                '%Y-%m-%d').date()  # Parse the date string to a date object
+        expiration_date = datetime.strptime(expiration_date, '%Y-%m-%d').date() if expiration_date else None
 
-        fooditem_id = request.POST.get('fooditem_id')  # Get the ID of the food item
+        fooditem_id = request.POST.get('fooditem_id')
 
-        if fooditem_id:  # If the ID exists, update the existing entry
+        if fooditem_id:
             fooditem = FoodItem.objects.get(id=fooditem_id)
             fooditem.name = name
-            fooditem.food_group = food_group
+            fooditem.food_group_id = food_group_id
             fooditem.expiration_date = expiration_date
             fooditem.item_size = item_size
             fooditem.associated_food_bank_id = associated_food_bank_id
-            fooditem.donator = donator
+            fooditem.donator_id = donator_id
             fooditem.save()
-        else:  # If the ID does not exist, create a new entry
+        else:
             FoodItem.objects.create(
                 name=name,
-                food_group=food_group,
+                food_group_id=food_group_id,
                 expiration_date=expiration_date,
                 item_size=item_size,
                 associated_food_bank_id=associated_food_bank_id,
-                donator=donator
+                donator_id=donator_id
             )
 
         return redirect('fooditem')
@@ -410,7 +410,9 @@ def fooditem_view(request):
     context = {
         'fooditems': fooditems,
         'query': query,
-        'foodbanks': FoodBank.objects.all()
+        'foodbanks': FoodBank.objects.all(),
+        'donators': donators,
+        'food_groups': food_groups,
     }
     return render(request, 'fooditem.html', context)
 
@@ -475,21 +477,22 @@ def distributed_food_item_view(request):
     recipient_organizations = RecipientOrganization.objects.all()
 
     if request.method == 'POST':
-        food_item_id = request.POST.get('food_item')
-        recipient_org_id = request.POST.get('recipient_organization')
+        if 'add' in request.POST:
+            food_item_id = request.POST.get('food_item')
+            recipient_org_id = request.POST.get('recipient_organization')
 
-        item_id = request.POST.get('item_id')
-
-        if item_id:
-            item = DistributedFoodItem.objects.get(id=item_id)
-            item.food_item_id = food_item_id
-            item.recipient_org_id = recipient_org_id
-            item.save()
-        else:
             DistributedFoodItem.objects.create(
                 food_item_id=food_item_id,
                 recipient_org_id=recipient_org_id
             )
+        elif 'save' in request.POST:
+            item_id = request.POST.get('item_id')
+            item = DistributedFoodItem.objects.get(id=item_id)
+            food_item_id = request.POST.get('food_item')
+            recipient_org_id = request.POST.get('recipient_organization')
+            item.food_item_id = food_item_id
+            item.recipient_org_id = recipient_org_id
+            item.save()
 
         return redirect('distributed_food_item')
 
@@ -499,11 +502,80 @@ def distributed_food_item_view(request):
         'recipient_organizations': recipient_organizations,
     }
     return render(request, 'distributed_food_item.html', context)
-
-
 def distributed_food_item_delete(request):
     if request.method == 'POST':
         item_id = request.POST.get('item_id')
         item = get_object_or_404(DistributedFoodItem, id=item_id)
         item.delete()
     return redirect('distributed_food_item')
+
+def donator_view(request):
+    donators = Donator.objects.all()
+
+    if request.method == 'POST':
+        donator_id = request.POST.get('donator_id')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+
+        if donator_id:
+            donator = Donator.objects.get(id=donator_id)
+            donator.first_name = first_name
+            donator.last_name = last_name
+            donator.phone_number = phone_number
+            donator.email = email
+            donator.save()
+        else:
+            Donator.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                phone_number=phone_number,
+                email=email
+            )
+
+        return redirect('donator')
+
+    context = {
+        'donators': donators,
+    }
+    return render(request, 'donator.html', context)
+
+
+def donator_delete(request):
+    if request.method == 'POST':
+        donator_id = request.POST.get('donator_id')
+        donator = get_object_or_404(Donator, id=donator_id)
+        donator.delete()
+    return redirect('donator')
+
+def foodgroup_view(request):
+    foodgroups = FoodGroup.objects.all()
+
+    if request.method == 'POST':
+        foodgroup_id = request.POST.get('foodgroup_id')
+        name = request.POST.get('name')
+
+        if foodgroup_id:
+            foodgroup = FoodGroup.objects.get(id=foodgroup_id)
+            foodgroup.name = name
+            foodgroup.save()
+        else:
+            FoodGroup.objects.create(
+                name=name
+            )
+
+        return redirect('foodgroup')
+
+    context = {
+        'foodgroups': foodgroups,
+    }
+    return render(request, 'foodgroup.html', context)
+
+
+def foodgroup_delete(request):
+    if request.method == 'POST':
+        foodgroup_id = request.POST.get('foodgroup_id')
+        foodgroup = get_object_or_404(FoodGroup, id=foodgroup_id)
+        foodgroup.delete()
+    return redirect('foodgroup')

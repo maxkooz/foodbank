@@ -63,8 +63,8 @@
     <button onclick="location.href='{% url 'task' %}'">Tasks</button>
     <button onclick="window.location.href = '{% url 'foodbank' %}'">Food Bank</button>
     <button onclick="location.href='{% url 'fooditem' %}'">Food Items</button>
-    <button onclick="location.href='#'">Food Group</button>
-    <button onclick="location.href='#'">Donator</button>
+    <button onclick="location.href='{% url 'foodgroup' %}'">Food Group</button>
+    <button onclick="location.href='{% url 'donator' %}'">Donator</button>
     <button onclick="location.href='{% url 'distributed_food_item' %}'">Distributed Food Items</button>
     <button onclick="location.href='{% url 'recipient_organization' %}'">Recipient Organization</button>
 </div>

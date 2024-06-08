@@ -3,7 +3,8 @@ from django.contrib.auth.views import LoginView
 from .views import home_view, volunteer_view, volunteer_edit_view, volunteer_delete, foodbank_view, foodbank_delete, \
     task_view, task_delete, individual_shift_view, individual_shift_delete, vehicle_view, vehicle_delete, transit_view, \
     transit_delete, fooditem_view, fooditem_delete, recipient_organization_view, recipient_organization_delete, \
-    distributed_food_item_view, distributed_food_item_delete
+    distributed_food_item_view, distributed_food_item_delete, donator_view, donator_delete, foodgroup_view, \
+    foodgroup_delete
 
 urlpatterns = [
     path('', LoginView.as_view(template_name='home.html'), name='home'),
@@ -28,4 +29,8 @@ urlpatterns = [
     path('recipient_organization/delete/', recipient_organization_delete, name='recipient_organization_delete'),
     path('distributed-food-items/', distributed_food_item_view, name='distributed_food_item'),
     path('distributed-food-items/delete/', distributed_food_item_delete, name='distributed_food_item_delete'),
+    path('donator/', donator_view, name='donator'),
+    path('donator/delete/', donator_delete, name='donator_delete'),
+    path('foodgroup/', foodgroup_view, name='foodgroup'),
+    path('foodgroup/delete/', foodgroup_delete, name='foodgroup_delete'),
 ]
