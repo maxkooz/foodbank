@@ -207,56 +207,45 @@ def task_delete(request):
         task = get_object_or_404(Task, id=task_id)
         task.delete()
     return redirect('task')
-
 def individual_shift_view(request):
     shifts = IndividualShift.objects.all()
     volunteers = Volunteer.objects.all()
     tasks = Task.objects.all()
-    error_message = None
 
     query = request.GET.get('q')
     if query:
-        shifts = shifts.filter(volunteer__first_name__icontains=query)
+        shifts = shifts.filter(
+            Q(volunteer__first_name__icontains=query) |  # Search by volunteer first name
+            Q(volunteer__last_name__icontains=query) |   # Search by volunteer last name
+            Q(task__description__icontains=query)        # Search by task description
+        )
 
     if request.method == 'POST':
-        volunteer_id = request.POST.get('volunteer_id')
-        task_id = request.POST.get('task_id')
-        shift_date = request.POST.get('shift_date')
-        shift_start = request.POST.get('shift_start')
-        shift_end = request.POST.get('shift_end')
+        volunteer_id = request.POST.get('volunteer')
+        task_id = request.POST.get('task')
 
-        if volunteer_id and task_id and shift_date and shift_start and shift_end:
+        shift_id = request.POST.get('shift_id')  # Get the ID of the shift
+
+        if shift_id:  # If the ID exists, update the existing entry
+            shift = IndividualShift.objects.get(id=shift_id)
+            shift.volunteer_id = volunteer_id
+            shift.task_id = task_id
+            shift.save()
+        else:  # If the ID does not exist, create a new entry
             IndividualShift.objects.create(
                 volunteer_id=volunteer_id,
-                task_id=task_id,
-                shift_date=shift_date,
-                shift_start=shift_start,
-                shift_end=shift_end
+                task_id=task_id
             )
-            return redirect('individual_shift')
-        else:
-            error_message = "All fields are required."
+
+        return redirect('individual_shift')
 
     context = {
         'shifts': shifts,
         'volunteers': volunteers,
         'tasks': tasks,
         'query': query,
-        'error_message': error_message,
     }
     return render(request, 'individual_shift.html', context)
-
-
-def individual_shift_edit_view(request):
-    if request.method == 'POST':
-        shift_id = request.POST.get('shift_id')
-        shift = IndividualShift.objects.get(id=shift_id)
-        shift.shift_date = request.POST.get('shift_date')
-        shift.shift_start = request.POST.get('shift_start')
-        shift.shift_end = request.POST.get('shift_end')
-        shift.save()
-        return redirect('individual_shift')
-    return redirect('home')
 
 
 def individual_shift_delete(request):
@@ -265,4 +254,3 @@ def individual_shift_delete(request):
         shift = get_object_or_404(IndividualShift, id=shift_id)
         shift.delete()
     return redirect('individual_shift')
-

@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
 from .views import home_view, volunteer_view, volunteer_edit_view, volunteer_delete, foodbank_view, foodbank_delete, \
-    task_view, task_delete, individual_shift_view, individual_shift_edit_view, individual_shift_delete
+    task_view, task_delete, individual_shift_view, individual_shift_delete
 
 urlpatterns = [
     path('', LoginView.as_view(template_name='home.html'), name='home'),
@@ -15,7 +15,6 @@ urlpatterns = [
     path('task/', task_view, name='task'),
     path('task/delete/', task_delete, name='task_delete'),
     path('individual_shift/', individual_shift_view, name='individual_shift'),
-    path('individual_shift/edit/', individual_shift_edit_view, name='individual_shift_edit'),
     path('individual_shift/delete/', individual_shift_delete, name='individual_shift_delete'),
-    #path('individual_shift/add/', individual_shift_add_view, name='individual_shift_add'),
+
 ]
