@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicles</title>
+</head>
+<body>
+    <h1>Vehicles</h1>
+    <form method="GET">
+        <label for="q">Search:</label>
+        <input type="text" id="q" name="q" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Driver</th>
+                <th>Vehicle Type</th>
+                <th>Total Passenger Capacity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehicle in vehicles %}
+            <tr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+                    <td>
+                        <select name="driver_volunteer">
+    <option value="" {% if not vehicle.driver_volunteer %} selected {% endif %}>Select Driver</option>
+    {% for volunteer in volunteers %}
+        <option value="{{ volunteer.id }}" {% if vehicle.driver_volunteer_id == volunteer.id %} selected {% endif %}>{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+    {% endfor %}
+</select>
+                    </td>
+                    <td><input type="text" name="vehicle_type" value="{{ vehicle.vehicle_type }}"></td>
+                    <td><input type="number" name="total_passenger_capacity" value="{{ vehicle.total_passenger_capacity }}"></td>
+                    <td>
+                        <button type="submit" name="save">Save</button>
+                        <button type="submit" formaction="{% url 'vehicle_delete' %}" name="delete">Delete</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Add Vehicle</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="driver_volunteer">Driver:</label>
+        <select id="driver_volunteer" name="driver_volunteer">
+            <option value="">Select Driver</option>
+            {% for volunteer in volunteers %}
+            <option value="{{ volunteer.id }}">{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="vehicle_type">Vehicle Type:</label>
+        <input type="text" id="vehicle_type" name="vehicle_type"><br>
+        <label for="total_passenger_capacity">Total Passenger Capacity:</label>
+        <input type="number" id="total_passenger_capacity" name="total_passenger_capacity"><br>
+        <button type="submit" name="add">Add Vehicle</button>
+    </form>
+</body>
+</html>

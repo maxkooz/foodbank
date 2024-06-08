@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
-from .models import Volunteer, FoodBank, Task, IndividualShift
+from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule
 from django.db.models import Q
 
 @login_required
@@ -254,3 +254,102 @@ def individual_shift_delete(request):
         shift = get_object_or_404(IndividualShift, id=shift_id)
         shift.delete()
     return redirect('individual_shift')
+
+def vehicle_view(request):
+    vehicles = Vehicle.objects.all()
+    volunteers = Volunteer.objects.all()
+
+    query = request.GET.get('q')
+    if query:
+        vehicles = vehicles.filter(
+            Q(driver_volunteer__first_name__icontains=query) |
+            Q(driver_volunteer__last_name__icontains=query) |
+            Q(vehicle_type__icontains=query)
+        )
+
+    if request.method == 'POST':
+        vehicle_type = request.POST.get('vehicle_type')
+        total_passenger_capacity = request.POST.get('total_passenger_capacity')
+        driver_volunteer_id = request.POST.get('driver_volunteer')
+
+        vehicle_id = request.POST.get('vehicle_id')  # Get the ID of the vehicle
+
+        if vehicle_id:  # If the ID exists, update the existing entry
+            vehicle = Vehicle.objects.get(id=vehicle_id)
+            vehicle.driver_volunteer_id = driver_volunteer_id
+            vehicle.vehicle_type = vehicle_type
+            vehicle.total_passenger_capacity = total_passenger_capacity
+            vehicle.save()
+        else:  # If the ID does not exist, create a new entry
+            Vehicle.objects.create(
+                driver_volunteer_id=driver_volunteer_id,
+                vehicle_type=vehicle_type,
+                total_passenger_capacity=total_passenger_capacity
+            )
+
+        return redirect('vehicle')
+
+    context = {
+        'vehicles': vehicles,
+        'volunteers': volunteers,
+        'query': query,
+    }
+    return render(request, 'vehicle.html', context)
+
+
+def vehicle_delete(request):
+    if request.method == 'POST':
+        vehicle_id = request.POST.get('vehicle_id')
+        vehicle = get_object_or_404(Vehicle, id=vehicle_id)
+        vehicle.delete()
+    return redirect('vehicle')
+
+def transit_view(request):
+    transit_schedules = TransitSchedule.objects.all()
+    vehicles = Vehicle.objects.all()
+
+    query = request.GET.get('q')
+    if query:
+        transit_schedules = transit_schedules.filter(
+            Q(vehicle__driver_volunteer__first_name__icontains=query) |
+            Q(vehicle__driver_volunteer__last_name__icontains=query) |
+            Q(vehicle__vehicle_type__icontains=query)
+        )
+
+    if request.method == 'POST':
+        vehicle_id = request.POST.get('vehicle')
+        arrival_period_of_operation = request.POST.get('arrival_period_of_operation')
+        departure_period_of_operation = request.POST.get('departure_period_of_operation')
+        current_available_capacity = request.POST.get('current_available_capacity')
+
+        transit_id = request.POST.get('transit_id')  # Get the ID of the transit schedule
+
+        if transit_id:  # If the ID exists, update the existing entry
+            transit_schedule = TransitSchedule.objects.get(id=transit_id)
+            transit_schedule.vehicle_id = vehicle_id
+            transit_schedule.arrival_period_of_operation = arrival_period_of_operation
+            transit_schedule.departure_period_of_operation = departure_period_of_operation
+            transit_schedule.current_available_capacity = current_available_capacity
+            transit_schedule.save()
+        else:  # If the ID does not exist, create a new entry
+            TransitSchedule.objects.create(
+                vehicle_id=vehicle_id,
+                arrival_period_of_operation=arrival_period_of_operation,
+                departure_period_of_operation=departure_period_of_operation,
+                current_available_capacity=current_available_capacity
+            )
+
+        return redirect('transit')
+
+    context = {
+        'transit_schedules': transit_schedules,
+        'vehicles': vehicles,
+        'query': query,
+    }
+    return render(request, 'transit.html', context)
+def transit_delete(request):
+    if request.method == 'POST':
+        transit_id = request.POST.get('delete')
+        transit_schedule = get_object_or_404(TransitSchedule, id=transit_id)
+        transit_schedule.delete()
+    return redirect('transit')
