@@ -5,7 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
-from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem
+from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem, \
+    RecipientOrganization
 from django.db.models import Q
 
 @login_required
@@ -419,3 +420,51 @@ def fooditem_delete(request):
         fooditem = get_object_or_404(FoodItem, id=fooditem_id)
         fooditem.delete()
     return redirect('fooditem')
+
+def recipient_organization_view(request):
+    recipient_organizations = RecipientOrganization.objects.all()
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        street_address = request.POST.get('street_address')
+        city = request.POST.get('city')
+        home_state = request.POST.get('home_state')
+        zip_code = request.POST.get('zip_code')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+
+        recipient_organization_id = request.POST.get('recipient_organization_id')
+        if recipient_organization_id:
+            recipient_organization = RecipientOrganization.objects.get(id=recipient_organization_id)
+            recipient_organization.name = name
+            recipient_organization.street_address = street_address
+            recipient_organization.city = city
+            recipient_organization.home_state = home_state
+            recipient_organization.zip_code = zip_code
+            recipient_organization.phone_number = phone_number
+            recipient_organization.email = email
+            recipient_organization.save()
+        else:
+            RecipientOrganization.objects.create(
+                name=name,
+                street_address=street_address,
+                city=city,
+                home_state=home_state,
+                zip_code=zip_code,
+                phone_number=phone_number,
+                email=email
+            )
+
+        return redirect('recipient_organization')
+
+    context = {
+        'recipient_organizations': recipient_organizations,
+    }
+    return render(request, 'recipient_organization.html', context)
+
+def recipient_organization_delete(request):
+    if request.method == 'POST':
+        recipient_organization_id = request.POST.get('recipient_organization_id')
+        recipient_organization = get_object_or_404(RecipientOrganization, id=recipient_organization_id)
+        recipient_organization.delete()
+    return redirect('recipient_organization')
