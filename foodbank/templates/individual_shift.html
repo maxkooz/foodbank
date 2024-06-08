@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Individual Shifts</title>
+</head>
+<body>
+    <h1>Individual Shifts</h1>
+    <form method="GET" action="{% url 'individual_shift' %}">
+        <input type="text" name="q" placeholder="Search by volunteer first name" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Volunteer</th>
+                <th>Task</th>
+                <th>Shift Date</th>
+                <th>Shift Start</th>
+                <th>Shift End</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shift in shifts %}
+            <tr>
+                <form method="POST" action="{% url 'individual_shift_edit' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="shift_id" value="{{ shift.id }}">
+                    <td>{{ shift.volunteer.first_name }} {{ shift.volunteer.last_name }}</td>
+                    <td>{{ shift.task.task_name }}</td>
+                    <td><input type="date" name="shift_date" value="{{ shift.shift_date }}"></td>
+                    <td><input type="time" name="shift_start" value="{{ shift.shift_start }}"></td>
+                    <td><input type="time" name="shift_end" value="{{ shift.shift_end }}"></td>
+                    <td>
+                        <button type="submit" name="save">Save</button>
+                        <button type="submit" formaction="{% url 'individual_shift_delete' %}" name="delete">Delete</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Add Individual Shift</h2>
+    <form method="POST" action="{% url 'individual_shift' %}">
+        {% csrf_token %}
+        <label for="volunteer_id">Volunteer:</label>
+        <select id="volunteer_id" name="volunteer_id" required>
+            {% for volunteer in volunteers %}
+            <option value="{{ volunteer.id }}">{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="task_id">Task:</label>
+        <select id="task_id" name="task_id" required>
+            {% if tasks %}
+                {% for task in tasks %}
+                <option value="{{ task.id }}">{{ task.task_name }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="" disabled>No tasks available</option>
+            {% endif %}
+        </select><br>
+        <label for="shift_date">Shift Date:</label>
+        <input type="date" id="shift_date" name="shift_date" required><br>
+        <label for="shift_start">Shift Start:</label>
+        <input type="time" id="shift_start" name="shift_start" required><br>
+        <label for="shift_end">Shift End:</label>
+        <input type="time" id="shift_end" name="shift_end" required><br>
+        <button type="submit" name="add">Add Individual Shift</button>
+
+    </form>
+    {% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>

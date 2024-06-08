@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
-from .models import Volunteer, FoodBank, Task
+from .models import Volunteer, FoodBank, Task, IndividualShift
 from django.db.models import Q
 
 @login_required
@@ -148,38 +148,121 @@ def foodbank_delete(request):
     return redirect('foodbank')
 
 def task_view(request):
+    tasks = Task.objects.all()
+    foodbanks = FoodBank.objects.all()
+
+    query = request.GET.get('q')
+    if query:
+        tasks = tasks.filter(
+            Q(description__icontains=query) |
+            Q(start_date_time__icontains=query) |
+            Q(end_date_time__icontains=query) |
+            Q(associated_food_bank__street_address__icontains=query) |
+            Q(min_volunteers__icontains=query) |
+            Q(max_volunteers__icontains=query)
+        )
+
     if request.method == 'POST':
-        # Get form data
-        task_name = request.POST.get('task_name')
-        task_description = request.POST.get('task_description')
-        foodbank_id = request.POST.get('foodbank_id')  # Assuming this is the ID of the associated FoodBank
+        description = request.POST.get('description')
+        start_date_time = request.POST.get('start_date_time')
+        end_date_time = request.POST.get('end_date_time')
+        associated_food_bank_id = request.POST.get('associated_food_bank')
+        min_volunteers = request.POST.get('min_volunteers')
+        max_volunteers = request.POST.get('max_volunteers')
 
-        # Get FoodBank instance
-        foodbank = FoodBank.objects.get(id=foodbank_id)
+        task_id = request.POST.get('task_id')  # Get the ID of the task
 
-        # Create or update Task instance
-        task_id = request.POST.get('task_id')
-        if task_id:
+        if task_id:  # If the ID exists, update the existing entry
             task = Task.objects.get(id=task_id)
-            task.task_name = task_name
-            task.task_description = task_description
-            task.associated_food_bank = foodbank
+            task.description = description
+            task.start_date_time = start_date_time
+            task.end_date_time = end_date_time
+            task.associated_food_bank_id = associated_food_bank_id
+            task.min_volunteers = min_volunteers
+            task.max_volunteers = max_volunteers
             task.save()
-        else:
+        else:  # If the ID does not exist, create a new entry
             Task.objects.create(
-                task_name=task_name,
-                task_description=task_description,
-                associated_food_bank=foodbank
+                description=description,
+                start_date_time=start_date_time,
+                end_date_time=end_date_time,
+                associated_food_bank_id=associated_food_bank_id,
+                min_volunteers=min_volunteers,
+                max_volunteers=max_volunteers
             )
 
-        return redirect('task_list')  # Redirect to task list view
+        return redirect('task')
 
-    # If not a POST request, render the form
-    return render(request, 'task.html')
+    context = {
+        'tasks': tasks,
+        'foodbanks': foodbanks,
+        'query': query,
+    }
+    return render(request, 'task.html', context)
+
 
 def task_delete(request):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         task = get_object_or_404(Task, id=task_id)
         task.delete()
-    return redirect('home')  # Redirect to the main page after deleting the task
+    return redirect('task')
+
+def individual_shift_view(request):
+    shifts = IndividualShift.objects.all()
+    volunteers = Volunteer.objects.all()
+    tasks = Task.objects.all()
+    error_message = None
+
+    query = request.GET.get('q')
+    if query:
+        shifts = shifts.filter(volunteer__first_name__icontains=query)
+
+    if request.method == 'POST':
+        volunteer_id = request.POST.get('volunteer_id')
+        task_id = request.POST.get('task_id')
+        shift_date = request.POST.get('shift_date')
+        shift_start = request.POST.get('shift_start')
+        shift_end = request.POST.get('shift_end')
+
+        if volunteer_id and task_id and shift_date and shift_start and shift_end:
+            IndividualShift.objects.create(
+                volunteer_id=volunteer_id,
+                task_id=task_id,
+                shift_date=shift_date,
+                shift_start=shift_start,
+                shift_end=shift_end
+            )
+            return redirect('individual_shift')
+        else:
+            error_message = "All fields are required."
+
+    context = {
+        'shifts': shifts,
+        'volunteers': volunteers,
+        'tasks': tasks,
+        'query': query,
+        'error_message': error_message,
+    }
+    return render(request, 'individual_shift.html', context)
+
+
+def individual_shift_edit_view(request):
+    if request.method == 'POST':
+        shift_id = request.POST.get('shift_id')
+        shift = IndividualShift.objects.get(id=shift_id)
+        shift.shift_date = request.POST.get('shift_date')
+        shift.shift_start = request.POST.get('shift_start')
+        shift.shift_end = request.POST.get('shift_end')
+        shift.save()
+        return redirect('individual_shift')
+    return redirect('home')
+
+
+def individual_shift_delete(request):
+    if request.method == 'POST':
+        shift_id = request.POST.get('shift_id')
+        shift = get_object_or_404(IndividualShift, id=shift_id)
+        shift.delete()
+    return redirect('individual_shift')
+
