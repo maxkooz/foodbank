@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.iuhiuhi
 from django.shortcuts import render
 from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem, \
-    RecipientOrganization
+    RecipientOrganization, DistributedFoodItem
 from django.db.models import Q
 
 @login_required
@@ -468,3 +468,42 @@ def recipient_organization_delete(request):
         recipient_organization = get_object_or_404(RecipientOrganization, id=recipient_organization_id)
         recipient_organization.delete()
     return redirect('recipient_organization')
+
+def distributed_food_item_view(request):
+    items = DistributedFoodItem.objects.all()
+    food_items = FoodItem.objects.all()
+    recipient_organizations = RecipientOrganization.objects.all()
+
+    if request.method == 'POST':
+        food_item_id = request.POST.get('food_item')
+        recipient_org_id = request.POST.get('recipient_organization')
+
+        item_id = request.POST.get('item_id')
+
+        if item_id:
+            item = DistributedFoodItem.objects.get(id=item_id)
+            item.food_item_id = food_item_id
+            item.recipient_org_id = recipient_org_id
+            item.save()
+        else:
+            DistributedFoodItem.objects.create(
+                food_item_id=food_item_id,
+                recipient_org_id=recipient_org_id
+            )
+
+        return redirect('distributed_food_item')
+
+    context = {
+        'distributed_food_items': items,
+        'food_items': food_items,
+        'recipient_organizations': recipient_organizations,
+    }
+    return render(request, 'distributed_food_item.html', context)
+
+
+def distributed_food_item_delete(request):
+    if request.method == 'POST':
+        item_id = request.POST.get('item_id')
+        item = get_object_or_404(DistributedFoodItem, id=item_id)
+        item.delete()
+    return redirect('distributed_food_item')
