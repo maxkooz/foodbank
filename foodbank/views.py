@@ -494,6 +494,23 @@ def transit_delete(request):
     return redirect(reverse('foodbank:transits'))
 
 @login_required(login_url='/login/')
+def transit_capacity(request):
+    query = request.GET.get('q')
+    transit_schedules = TransitSchedule.objects.all()
+    if query:
+        transit_schedules = transit_schedules.filter(Q(current_available_capacity__gte=query)) #change gte value to user's search input
+
+    # if request.method == 'POST':
+    #     vehicle_id = request.POST.get('vehicle_id')
+    #     vehicle = Vehicle.objects.get(id=vehicle_id)
+    #     vehicle.arrival_period_of_operation = request.POST.get('arrival_period_of_operation')
+    #     vehicle.departure_period_of_operation = request.POST.get('departure_period_of_operation')
+    #     vehicle.current_available_capacity = request.POST.get('current_available_capacity')
+    #     vehicle.save()
+    #return redirect('transit')
+    return render(request, 'transit.html', {'transit_schedules': transit_schedules})
+
+@login_required(login_url='/login/')
 def fooditem_view(request):
     fooditems = FoodItem.objects.all()
     donators = Donator.objects.all()
