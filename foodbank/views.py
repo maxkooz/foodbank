@@ -234,8 +234,6 @@ class FoodBankView(generic.ListView):
             return True
         return False
     
-
-### Nafis's code ###
 def task_view(request):
     tasks = Task.objects.all()
     foodbanks = FoodBank.objects.all()

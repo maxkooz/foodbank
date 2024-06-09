@@ -11,9 +11,6 @@ urlpatterns = [
     path('main_page/', views.main_page_view, name='main_page'),
     path('volunteers/', views.VolunteerView.as_view(), name='volunteers'),
     path('foodbanks/', views.FoodBankView.as_view(), name='foodbanks'),
-
-
-    ### Nafis's changes ####
     path('tasks/', views.task_view, name='tasks'),
     path('tasks/delete/', views.task_delete, name='task_delete'),
     path('individual_shifts/', views.individual_shift_view, name='individual_shifts'),

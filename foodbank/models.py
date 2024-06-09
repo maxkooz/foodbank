@@ -54,9 +54,11 @@ class Donator(models.Model):
     last_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
     email = models.CharField(max_length=100)
+
 class FoodGroup(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
+    
 class FoodItem(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
