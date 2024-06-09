@@ -9,10 +9,12 @@
 </head>
 <body>
     <h1>Volunteers</h1>
+    <!-- Search entities -->
     <form method="GET" action="{% url 'foodbank:volunteers' %}">
         <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
+    <!-- Display entities in table -->
     <table border="1">
         <thead>
             <tr>
@@ -43,7 +45,9 @@
                     <td><input type="text" name="phone_number" value="{{ volunteer.phone_number }}"></td>
                     <td><input type="text" name="email" value="{{ volunteer.email }}"></td>
                     <td>
+                        <!-- Button to edit entity -->
                         <button type="submit" name="edit">Save Edits</button>
+                        <!-- Button to delete entity -->
                         <button type="submit" name="delete">Delete</button>
                     </td>
                 </form>
@@ -51,6 +55,28 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Data summary tables -->
+    <h2>Data Summary</h2>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>City</th>
+                <th>Number of Volunteers</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in vol_count_by_city %}
+            <tr>
+                <td>{{row.city}}</td>
+                <td>{{row.NumVolunteers}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Form to create new entity -->
     <h2>Add Volunteer</h2>
     <form method="POST" action="{% url 'foodbank:volunteers' %}">
         {% csrf_token %}

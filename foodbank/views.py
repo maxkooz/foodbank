@@ -6,12 +6,14 @@ from django.contrib.auth.models import User
 from django.views import generic
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import connection
 
 from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem, \
     RecipientOrganization, DistributedFoodItem, Donator, FoodGroup
 
 import re
 from datetime import datetime
+from collections import namedtuple
 
 def home_view(request):
     error_msg = request.GET.get('error_msg')
@@ -51,6 +53,8 @@ def sign_up_view(request):
     user.last_name = last_name
     user.save()
 
+    login(request, user)
+
     return redirect(reverse('foodbank:main_page'))
 
 @login_required(login_url='/login/')
@@ -59,6 +63,23 @@ def main_page_view(request):
         return redirect(reverse('foodbank:home'))
 
     return render(request, 'main_page.html')
+
+# from Django documentation
+def namedtuplefetchall(cursor):
+    """
+    Return all rows from a cursor as a namedtuple.
+    Assume the column names are unique.
+    """
+    desc = cursor.description
+    nt_result = namedtuple("Result", [col[0] for col in desc])
+    return [nt_result(*row) for row in cursor.fetchall()]
+
+def execute_raw_sql(query):
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        res = namedtuplefetchall(cursor)
+    
+    return res
 
 class VolunteerView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"
@@ -73,7 +94,7 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         return Volunteer.objects.all()
     
     def get(self, req):
-        error_msg = req.GET['error_msg'] if 'error_msg' in req.GET else None
+        error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
         volunteers = self.get_queryset()
         query = req.GET.get('q')
         if query:
@@ -88,9 +109,13 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
                 Q(email__icontains=query)
             )
 
+        # data summary queries
+        # group volunteers by city
+        res = execute_raw_sql("SELECT city, COUNT(id) AS NumVolunteers FROM foodbank_volunteer GROUP BY city;")
+
         context = {
             self.context_object_name: volunteers,
-            'query': query,
+            'vol_count_by_city': res,
             'error_msg': error_msg,
         }
 
@@ -167,15 +192,16 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"
     redirect_field_name = ""
     model=FoodBank
-    context_object_name='food_banks'
+    context_object_name='foodbanks'
     template_name='foodbank.html'
 
     def get_queryset(self):
         return FoodBank.objects.all()
     
     def get(self, req):
-        error_msg = req.GET['error_msg'] if 'error_msg' in req.GET else None
+        error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
         foodbanks = self.get_queryset()
+        potential_managers = Volunteer.objects.all()
 
         query = req.GET.get('q')
         if query:
@@ -187,22 +213,27 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
                 Q(email__icontains=query)
             )
 
+        # data summary queries
+        # group food banks by city
+        res = execute_raw_sql("SELECT city, COUNT(id) AS NumFoodBanks FROM foodbank_foodbank GROUP BY city;")
+
         context = {
             self.context_object_name: foodbanks,
-            'query': query,
+            'food_bank_count_by_city': res,
+            'potential_managers': potential_managers,
             'error_msg': error_msg,
         }
 
         return render(req, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
-        street_address = request.POST["street_address"]
-        city = request.POST["city"]
-        home_state = request.POST["home_state"]
-        zip_code = request.POST["zip_code"]
-        manager = request.POST["manager"]
-        phone_number = request.POST["phone_number"]
-        email = request.POST["email"]
+        street_address = request.POST.get('street_address')
+        city = request.POST.get('city')
+        home_state = request.POST.get('home_state')
+        zip_code = request.POST.get('zip_code')
+        manager = request.POST.get('manager')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
 
         if self.validateTextFields([street_address, city, home_state, zip_code, phone_number, email]) and self.validateForeignKey(manager):
             if 'add' in request.POST:
@@ -210,6 +241,7 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
                     street_address=street_address,
                     city=city,
                     home_state=home_state,
+                    zip_code=zip_code,
                     manager=Volunteer.objects.get(pk=manager),
                     phone_number=phone_number,
                     email=email
