@@ -12,7 +12,7 @@
     <form method="GET">
         <label for="q">Search:</label>
         <input type="text" id="q" name="q" value="{{ query }}">
-        <button type="submit" formaction="{% url 'transit_capacity' %}" name="capacity">Search</button>
+        <button type="submit" formaction="{% url 'foodbank:transit_capacity' %}" name="capacity">Search</button>
     </form>
 
     <table border="1">
@@ -44,7 +44,7 @@
                     <td><input type="number" name="current_available_capacity" value="{{ transit_schedule.current_available_capacity }}"></td>
                     <td>
                         <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'transit_delete' %}" name="delete" value="{{ transit_schedule.id }}">Delete</button>
+                        <button type="submit" formaction="{% url 'foodbank:transit_delete' %}" name="delete" value="{{ transit_schedule.id }}">Delete</button>
                     </td>
                 </form>
             </tr>
@@ -70,6 +70,8 @@
         <button type="submit" name="add">Add Transit Schedule</button>
     </form>
 
-<button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
 </body>
 </html>

@@ -46,7 +46,7 @@
                     <td><input type="number" name="max_volunteers" value="{{ task.max_volunteers }}"></td>
                     <td>
                         <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'task_delete' %}" name="delete">Delete</button>
+                        <button type="submit" formaction="{% url 'foodbank:task_delete' %}" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
@@ -74,6 +74,10 @@
         <input type="number" id="max_volunteers" name="max_volunteers"><br>
         <button type="submit" name="add">Add Task</button>
     </form>
+
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
 </body>
 
 <button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>

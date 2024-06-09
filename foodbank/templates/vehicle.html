@@ -40,7 +40,7 @@
                     <td><input type="number" name="total_passenger_capacity" value="{{ vehicle.total_passenger_capacity }}"></td>
                     <td>
                         <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'vehicle_delete' %}" name="delete">Delete</button>
+                        <button type="submit" formaction="{% url 'foodbank:vehicle_delete' %}" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
@@ -64,6 +64,8 @@
         <button type="submit" name="add">Add Vehicle</button>
     </form>
 
-<button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
 </body>
 </html>

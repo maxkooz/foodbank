@@ -24,7 +24,7 @@
                     <td><input type="text" name="name" value="{{ foodgroup.name }}"></td>
                     <td>
                         <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'foodgroup_delete' %}" name="delete">Delete</button>
+                        <button type="submit" formaction="{% url 'foodbank:foodgroup_delete' %}" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
@@ -39,6 +39,12 @@
         <button type="submit" name="add">Add Food Group</button>
     </form>
 
+<<<<<<< HEAD
 <button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>
+=======
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
+>>>>>>> main
 </body>
 </html>

@@ -36,7 +36,7 @@
                     <td><input type="text" name="email" value="{{ organization.email }}"></td>
                     <td>
                         <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'recipient_organization_delete' %}" name="delete">Delete</button>
+                        <button type="submit" formaction="{% url 'foodbank:recipient_organization_delete' %}" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
@@ -62,6 +62,10 @@
         <input type="text" id="email" name="email"><br>
         <button type="submit" name="add">Add Recipient Organization</button>
     </form>
+
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
 </body>
 
 <button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>

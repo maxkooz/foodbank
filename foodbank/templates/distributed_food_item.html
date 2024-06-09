@@ -38,7 +38,7 @@
                     </td>
                     <td>
                         <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'distributed_food_item_delete' %}" name="delete">Delete</button>
+                        <button type="submit" formaction="{% url 'foodbank:distributed_food_item_delete' %}" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
@@ -62,6 +62,10 @@
         </select><br>
         <button type="submit" name="add">Add Distributed Food Item</button>
     </form>
+
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
 </body>
 
 <button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>

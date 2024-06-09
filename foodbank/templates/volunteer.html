@@ -9,13 +9,16 @@
 </head>
 <body>
     <h1>Volunteers</h1>
-    <form method="GET" action="{% url 'volunteer' %}">
+    <!-- Search entities -->
+    <form method="GET" action="{% url 'foodbank:volunteers' %}">
         <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
+    <!-- Display entities in table -->
     <table border="1">
         <thead>
             <tr>
+                <th>Volunteer ID</th>
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Street Address</th>
@@ -30,9 +33,9 @@
         <tbody>
             {% for volunteer in volunteers %}
             <tr>
-                <form method="POST" action="{% url 'volunteer_edit' %}">
+                <form method="POST" action="{% url 'foodbank:volunteers' %}">
                     {% csrf_token %}
-                    <input type="hidden" name="volunteer_id" value="{{ volunteer.id }}">
+                    <td><input type="text" name="volunteer_id" value="{{ volunteer.id }}"></td>
                     <td><input type="text" name="first_name" value="{{ volunteer.first_name }}"></td>
                     <td><input type="text" name="last_name" value="{{ volunteer.last_name }}"></td>
                     <td><input type="text" name="street_address" value="{{ volunteer.street_address }}"></td>
@@ -42,16 +45,40 @@
                     <td><input type="text" name="phone_number" value="{{ volunteer.phone_number }}"></td>
                     <td><input type="text" name="email" value="{{ volunteer.email }}"></td>
                     <td>
-                        <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'volunteer_delete' %}" name="delete">Delete</button>
+                        <!-- Button to edit entity -->
+                        <button type="submit" name="edit">Save Edits</button>
+                        <!-- Button to delete entity -->
+                        <button type="submit" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Data summary tables -->
+    <h2>Data Summary</h2>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>City</th>
+                <th>Number of Volunteers</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in vol_count_by_city %}
+            <tr>
+                <td>{{row.city}}</td>
+                <td>{{row.NumVolunteers}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Form to create new entity -->
     <h2>Add Volunteer</h2>
-    <form method="POST" action="{% url 'volunteer' %}">
+    <form method="POST" action="{% url 'foodbank:volunteers' %}">
         {% csrf_token %}
         <label for="first_name">First Name:</label>
         <input type="text" id="first_name" name="first_name"><br>
@@ -73,7 +100,12 @@
         <button type="submit" name="add">Add Volunteer</button>
     </form>
 
+<<<<<<< HEAD
     <button onclick="location.href='{% url 'main_page' %}'">Back to Main</button>
+=======
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+>>>>>>> main
 
 </body>
 </html>

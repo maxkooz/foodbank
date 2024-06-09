@@ -15,8 +15,9 @@ class FoodBank(models.Model):
     id = models.AutoField(primary_key=True)
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
-    state = models.CharField(max_length=50)
-    manager = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=True, blank=True)
+    home_state = models.CharField(max_length=50)
+    zip_code = models.CharField(max_length=20, default="00000")
+    manager = models.ForeignKey(Volunteer, on_delete=models.PROTECT, null=True, blank=True)
     phone_number = models.CharField(max_length=20)
     email = models.CharField(max_length=100)
 
@@ -53,9 +54,11 @@ class Donator(models.Model):
     last_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
     email = models.CharField(max_length=100)
+
 class FoodGroup(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
+    
 class FoodItem(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
