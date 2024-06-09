@@ -149,18 +149,13 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
                 volunteer_id = request.POST.get('volunteer_id')
                 volunteer = Volunteer.objects.get(id=volunteer_id)
 
-                # for field in Volunteer._meta.get_fields():
-                #     print(field, type(field))
-
-                if request.POST.get('first_name'):
-                    volunteer.first_name = request.POST.get('first_name')
-                volunteer.last_name = request.POST.get('last_name')
-                volunteer.street_address = request.POST.get('street_address')
-                volunteer.city = request.POST.get('city')
-                volunteer.home_state = request.POST.get('home_state')
-                volunteer.zip_code = request.POST.get('zip_code')
-                volunteer.phone_number = request.POST.get('phone_number')
-                volunteer.email = request.POST.get('email')
+                for field in Volunteer._meta.get_fields():
+                    name = field.name
+                    if name != 'id' and name in request.POST and request.POST.get(name) != "":
+                        newval = request.POST.get(name)
+                        print(name, newval)
+                        
+                        volunteer.__setattr__(name, newval)
                 
                 volunteer.save()
             elif 'delete' in request.POST:
@@ -249,7 +244,17 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
             elif 'edit' in request.POST:
                 foodbank_id = request.POST.get('foodbank_id')
                 foodbank = FoodBank.objects.get(id=foodbank_id)
-                foodbank.street_address = street_address
+
+                for field in FoodBank._meta.get_fields():
+                    name = field.name
+                    if name != 'id' and name in request.POST and request.POST.get(name) != "":
+                        newval = request.POST.get(name)
+                        if name == 'manager':
+                            newval = Volunteer.objects.get(id=newval)
+                        print(name, newval)
+                        
+                        foodbank.__setattr__(name, newval)
+
                 # Update other fields for editing
                 foodbank.save()
             elif 'delete' in request.POST:
