@@ -3,46 +3,90 @@
 <head>
     <title>Foodbank Main Page</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Libre Baskerville', serif;
+            background-color: #add8e6;
+        }
+        .header {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #1d3557;
+            text-align: center;
+        }
+        .subheader {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-align: center;
         }
         .button-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-around; /* Optional: adjust as needed jj*/
+            justify-content: center;
+            width: 80%;
         }
         .button-container button {
             margin: 10px;
             padding: 15px 30px;
             font-size: 16px;
             cursor: pointer;
-            width: calc(33.33% - 20px); /* Adjust width based on the number of buttons in a row */
+            width: calc(33.33% - 20px);
             box-sizing: border-box;
+            border: none;
+            border-radius: 5px;
+            background-color: #FFDBBB;
+            color: darkorange;
+            transition: background-color 0.3s ease;
+        }
+        .button-container button:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        
+        a:link { 
+           text-decoration: none; 
+           color: darkorange;
+        } 
+        a:visited { 
+            text-decoration: none; 
+            color: darkorange;
+        } 
+        a:hover { 
+            text-decoration: none; 
+            color: darkorange;
+        } 
+        a:active { 
+            text-decoration: none; 
+            color: darkorange;
         }
     </style>
 </head>
 <body>
+    <div class="header">Foodbank Management System</div>
+    <div class="subheader">Welcome to the Foodbank Main Page</div>
     <div class="button-container">
-        <button><a href="{% url 'foodbank:volunteer' %}">Volunteer</a></button>
-        <button onclick="location.href='#'">Vehicle</button>
-        <button onclick="location.href='#'">Transit Schedule</button>
-        <button onclick="location.href='#'">Individual Shifts</button>
-        <button onclick="location.href='#'">Tasks</button>
-        <button><a href="{% url 'foodbank:foodbanks' %}">Food Banks</a></button>
-        <button onclick="location.href='#'">Food Items</button>
-        <button onclick="location.href='#'">Food Group</button>
-        <button onclick="location.href='#'">Donator</button>
-        <button onclick="location.href='#'">Distributed Food Items</button>
-        <button onclick="location.href='#'">Recipient Organization</button>
+        <button onclick="location.href='{% url 'foodbank:volunteers' %}'">Volunteer</button>
+        <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
+        <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
+        <button onclick="location.href='{% url 'foodbank:individual_shifts' %}'">Individual Shifts</button>
+        <button onclick="location.href='{% url 'foodbank:tasks' %}'">Tasks</button>
+        <button onclick="location.href='{% url 'foodbank:foodbanks' %}'">Food Banks</button>
+        <button onclick="location.href='{% url 'foodbank:fooditems' %}'">Food Items</button>
+        <button onclick="location.href='{% url 'foodbank:foodgroups' %}'">Food Groups</button>
+        <button onclick="location.href='{% url 'foodbank:donators' %}'">Donators</button>
+        <button onclick="location.href='{% url 'foodbank:distributed_food_items' %}'">Distributed Food Items</button>
+        <button onclick="location.href='{% url 'foodbank:recipient_organizations' %}'">Recipient Organizations</button>
+        <button onclick="location.href='{% url 'foodbank:logout' %}'" style="color: darkred;"><b>Logout</b></button>
     </div>
 
-    <div>
-        <button><a href="{% url 'foodbank:logout' %}">Logout</a></button>
-    </div>
+
 </body>
 </html>

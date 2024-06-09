@@ -1,0 +1,64 @@
+<h1>Individual Shifts</h1>
+<form method="GET">
+    <label for="q">Search:</label>
+    <input type="text" id="q" name="q" value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Volunteer</th>
+            <th>Task</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for shift in shifts %}
+        <tr>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="shift_id" value="{{ shift.id }}">
+                <td>
+                    <select name="volunteer">
+                        {% for volunteer in volunteers %}
+                        <option value="{{ volunteer.id }}" {% if shift.volunteer_id == volunteer.id %}selected{% endif %}>{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="task">
+                        {% for task in tasks %}
+                        <option value="{{ task.id }}" {% if shift.task_id == task.id %}selected{% endif %}>{{ task.description }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <button type="submit" name="save">Save</button>
+                    <button type="submit" formaction="{% url 'foodbank:individual_shift_delete' %}" name="delete">Delete</button>
+                </td>
+            </form>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h2>Add Individual Shift</h2>
+<form method="POST">
+    {% csrf_token %}
+    <label for="volunteer">Volunteer:</label>
+    <select id="volunteer" name="volunteer">
+        {% for volunteer in volunteers %}
+        <option value="{{ volunteer.id }}">{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+        {% endfor %}
+    </select><br>
+    <label for="task">Task:</label>
+    <select id="task" name="task">
+        {% for task in tasks %}
+        <option value="{{ task.id }}">{{ task.description }}</option>
+        {% endfor %}
+    </select><br>
+    <button type="submit" name="add">Add Individual Shift</button>
+
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
+</form>

@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('foodbank', '0002_foodbank_zip_code_alter_foodbank_manager'),
+        ('foodbank', '0004_foodbank_zip_code_alter_foodbank_manager'),
     ]
 
     operations = [

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Food Items</title>
+</head>
+<body>
+    <h1>Distributed Food Items</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Food Item</th>
+                <th>Recipient Organization</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in distributed_food_items %}
+            <tr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <td>
+                        <select name="food_item">
+                            {% for food_item in food_items %}
+                            <option value="{{ food_item.id }}" {% if item.food_item_id == food_item.id %}selected{% endif %}>{{ food_item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="recipient_organization">
+                            {% for organization in recipient_organizations %}
+                            <option value="{{ organization.id }}" {% if item.recipient_org_id == organization.id %}selected{% endif %}>{{ organization.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <button type="submit" name="save">Save</button>
+                        <button type="submit" formaction="{% url 'foodbank:distributed_food_item_delete' %}" name="delete">Delete</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Add Distributed Food Item</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="food_item">Food Item:</label>
+        <select id="food_item" name="food_item">
+            {% for food_item in food_items %}
+            <option value="{{ food_item.id }}">{{ food_item.name }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="recipient_organization">Recipient Organization:</label>
+        <select id="recipient_organization" name="recipient_organization">
+            {% for organization in recipient_organizations %}
+            <option value="{{ organization.id }}">{{ organization.name }}</option>
+            {% endfor %}
+        </select><br>
+        <button type="submit" name="add">Add Distributed Food Item</button>
+    </form>
+
+    <h2>Return to Main Page</h2>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+
+</body>
+</html>
