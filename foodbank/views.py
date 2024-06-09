@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.views import generic
 from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem, \
     RecipientOrganization, DistributedFoodItem, Donator, FoodGroup
@@ -12,11 +14,16 @@ import re
 from datetime import datetime
 
 def home_view(request):
-    return render(request, 'home.html')
+    error_msg = request.GET.get('error_msg')
+
+    context = {
+        'error_msg': error_msg
+    }
+    return render(request, 'home.html', context)
 
 def login_view(request):
-    username = request.POST["username"]
-    password = request.POST["password"]
+    username = request.POST.get("username")
+    password = request.POST.get("password")
 
     user = authenticate(request, username=username, password=password)
 
@@ -25,18 +32,19 @@ def login_view(request):
 
         return redirect(reverse('foodbank:main_page'))
     else:
-        return render(request, 'home.html', {"error_msg": "Login Failed"})
+        error_msg = 'Login Failed. Please enter username and password or create new account.'
+        return redirect(reverse('foodbank:home')+'?error_msg='+error_msg)
     
 def logout_view(request):
     logout(request)
     return redirect(reverse('foodbank:main_page'))
 
 def sign_up_view(request):
-    username = request.POST["username"]
-    password = request.POST["password"]
-    first_name = request.POST["first_name"]
-    last_name = request.POST["last_name"]
-    email = request.POST["email"]
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+    first_name = request.POST.get("first_name")
+    last_name = request.POST.get("last_name")
+    email = request.POST.get("email")
 
     user = User.objects.create_user(username, email=email, password=password)
     user.first_name = first_name
@@ -45,13 +53,16 @@ def sign_up_view(request):
 
     return redirect(reverse('foodbank:main_page'))
 
+@login_required(login_url='/login/')
 def main_page_view(request):
     if not request.user.is_authenticated:
         return redirect(reverse('foodbank:home'))
 
     return render(request, 'main_page.html')
 
-class VolunteerView(generic.ListView):
+class VolunteerView(LoginRequiredMixin, generic.ListView):
+    login_url = "/login/"
+    redirect_field_name = ""
     model = Volunteer
     template_name='volunteer.html'
     context_object_name='volunteers'
@@ -152,7 +163,9 @@ class VolunteerView(generic.ListView):
         return True
 
 
-class FoodBankView(generic.ListView):
+class FoodBankView(LoginRequiredMixin, generic.ListView):
+    login_url = "/login/"
+    redirect_field_name = ""
     model=FoodBank
     context_object_name='food_banks'
     template_name='foodbank.html'
@@ -233,7 +246,8 @@ class FoodBankView(generic.ListView):
         if Volunteer.objects.filter(pk=fk).exists():
             return True
         return False
-    
+
+@login_required(login_url='/login/')  
 def task_view(request):
     tasks = Task.objects.all()
     foodbanks = FoodBank.objects.all()
@@ -287,13 +301,15 @@ def task_view(request):
     }
     return render(request, 'task.html', context)
 
-
+@login_required(login_url='/login/')
 def task_delete(request):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         task = get_object_or_404(Task, id=task_id)
         task.delete()
     return redirect(reverse('foodbank:tasks'))
+
+@login_required(login_url='/login/')
 def individual_shift_view(request):
     shifts = IndividualShift.objects.all()
     volunteers = Volunteer.objects.all()
@@ -334,7 +350,7 @@ def individual_shift_view(request):
     }
     return render(request, 'individual_shift.html', context)
 
-
+@login_required(login_url='/login/')
 def individual_shift_delete(request):
     if request.method == 'POST':
         shift_id = request.POST.get('shift_id')
@@ -342,6 +358,7 @@ def individual_shift_delete(request):
         shift.delete()
     return redirect(reverse('foodbank:individual_shifts'))
 
+@login_required(login_url='/login/')
 def vehicle_view(request):
     vehicles = Vehicle.objects.all()
     volunteers = Volunteer.objects.all()
@@ -383,7 +400,7 @@ def vehicle_view(request):
     }
     return render(request, 'vehicle.html', context)
 
-
+@login_required(login_url='/login/')
 def vehicle_delete(request):
     if request.method == 'POST':
         vehicle_id = request.POST.get('vehicle_id')
@@ -391,6 +408,7 @@ def vehicle_delete(request):
         vehicle.delete()
     return redirect(reverse('foodbank:vehicles'))
 
+@login_required(login_url='/login/')
 def transit_view(request):
     transit_schedules = TransitSchedule.objects.all()
     vehicles = Vehicle.objects.all()
@@ -434,6 +452,8 @@ def transit_view(request):
         'query': query,
     }
     return render(request, 'transit.html', context)
+
+@login_required(login_url='/login/')
 def transit_delete(request):
     if request.method == 'POST':
         transit_id = request.POST.get('delete')
@@ -441,6 +461,7 @@ def transit_delete(request):
         transit_schedule.delete()
     return redirect(reverse('foodbank:transits'))
 
+@login_required(login_url='/login/')
 def fooditem_view(request):
     fooditems = FoodItem.objects.all()
     donators = Donator.objects.all()
@@ -500,6 +521,7 @@ def fooditem_view(request):
     }
     return render(request, 'fooditem.html', context)
 
+@login_required(login_url='/login/')
 def fooditem_delete(request):
     if request.method == 'POST':
         fooditem_id = request.POST.get('fooditem_id')
@@ -507,6 +529,7 @@ def fooditem_delete(request):
         fooditem.delete()
     return redirect(reverse('foodbank:food_items'))
 
+@login_required(login_url='/login/')
 def recipient_organization_view(request):
     recipient_organizations = RecipientOrganization.objects.all()
 
@@ -548,6 +571,7 @@ def recipient_organization_view(request):
     }
     return render(request, 'recipient_organization.html', context)
 
+@login_required(login_url='/login/')
 def recipient_organization_delete(request):
     if request.method == 'POST':
         recipient_organization_id = request.POST.get('recipient_organization_id')
@@ -555,6 +579,7 @@ def recipient_organization_delete(request):
         recipient_organization.delete()
     return redirect(reverse('foodbank:recipient_organizations'))
 
+@login_required(login_url='/login/')
 def distributed_food_item_view(request):
     items = DistributedFoodItem.objects.all()
     food_items = FoodItem.objects.all()
@@ -586,6 +611,8 @@ def distributed_food_item_view(request):
         'recipient_organizations': recipient_organizations,
     }
     return render(request, 'distributed_food_item.html', context)
+
+@login_required(login_url='/login/')
 def distributed_food_item_delete(request):
     if request.method == 'POST':
         item_id = request.POST.get('item_id')
@@ -593,6 +620,7 @@ def distributed_food_item_delete(request):
         item.delete()
     return redirect(reverse('foodbank:distributed_food_items'))
 
+@login_required(login_url='/login/')
 def donator_view(request):
     donators = Donator.objects.all()
 
@@ -625,7 +653,7 @@ def donator_view(request):
     }
     return render(request, 'donator.html', context)
 
-
+@login_required(login_url='/login/')
 def donator_delete(request):
     if request.method == 'POST':
         donator_id = request.POST.get('donator_id')
@@ -633,6 +661,7 @@ def donator_delete(request):
         donator.delete()
     return redirect(reverse('foodbank:donators'))
 
+@login_required(login_url='/login/')
 def foodgroup_view(request):
     foodgroups = FoodGroup.objects.all()
 
@@ -656,7 +685,7 @@ def foodgroup_view(request):
     }
     return render(request, 'foodgroup.html', context)
 
-
+@login_required(login_url='/login/')
 def foodgroup_delete(request):
     if request.method == 'POST':
         foodgroup_id = request.POST.get('foodgroup_id')
