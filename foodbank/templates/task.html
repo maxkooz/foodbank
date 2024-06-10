@@ -38,11 +38,11 @@
                     {% csrf_token %}
                     <td>{{ row.t_id }}</td>
                     <td>
-                        <select name="associated_food_bank">
-                            {% for foodbank in foodbanks %}
-                            <option value="{{ foodbank.id }}" {% if row.fb_id == foodbank.id %}selected{% endif %}>{{ foodbank.street_address }}, {{foodbank.city}}, {{foodbank.home_state}}</option>
-                            {% endfor %}
-                        </select>
+                        {% for foodbank in foodbanks %}
+                            {% if row.fb_id == foodbank.id %}
+                                {{ foodbank.street_address }}, {{foodbank.city}}, {{foodbank.home_state}}
+                             {% endif %}
+                        {% endfor %}
                     </td>
                     <td>{{ row.t_descr }}</td>
                     <td>{{ row.t_start|date:'m-d-Y H:i' }}</td>
