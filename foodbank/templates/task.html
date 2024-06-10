@@ -11,16 +11,71 @@
     <h1>Tasks</h1>
     <form method="GET">
         <label for="q">Search:</label>
-        <input type="text" id="q" name="q" value="{{ query }}">
+        <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter description..." {% else %} value="{{query}}" {% endif %}>
         <button type="submit">Search</button>
     </form>
+
+    <!-- Vols Per Task -->
+    <h2>Available Upcoming Tasks</h2>
     <table border="1">
         <thead>
             <tr>
+                <th>Task ID</th>
+                <th>Associated Food Bank</th>
                 <th>Description</th>
                 <th>Start Date Time</th>
                 <th>End Date Time</th>
+                <th>Min Volunteers</th>
+                <th>Max Volunteers</th>
+                <th>Vols Currently Signed Up</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in vols_per_task %}
+            <tr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <td>{{ row.t_id }}</td>
+                    <td>
+                        <select name="associated_food_bank">
+                            {% for foodbank in foodbanks %}
+                            <option value="{{ foodbank.id }}" {% if row.fb_id == foodbank.id %}selected{% endif %}>{{ foodbank.street_address }}, {{foodbank.city}}, {{foodbank.home_state}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>{{ row.t_descr }}</td>
+                    <td>{{ row.t_start|date:'m-d-Y H:i' }}</td>
+                    <td>{{ row.t_end|date:'m-d-Y H:i' }}</td>
+                    <td>{{ row.t_min }}</td>
+                    <td>{{ row.t_max }}</td>
+                    <td>{{ row.t_cur }}</td>
+                    <td><select name="vol_signing_up">
+                        <option value="" selected>Select Volunteer</option>
+                        {% for volunteer in volunteers %}
+                            <option value="{{ volunteer.id }}">{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+                        {% endfor %}
+                    </select></td>
+                    <td>
+                        <input type="hidden" name="task_id" value="{{row.t_id}}">
+                        <button type="submit" name="signup">Sign Up</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- All task entities -->
+    <h2>All Tasks</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Task ID</th>
                 <th>Associated Food Bank</th>
+                <th>Description</th>
+                <th>Start Date Time</th>
+                <th>End Date Time</th>
                 <th>Min Volunteers</th>
                 <th>Max Volunteers</th>
                 <th>Action</th>
@@ -31,22 +86,22 @@
             <tr>
                 <form method="POST">
                     {% csrf_token %}
-                    <input type="hidden" name="task_id" value="{{ task.id }}">
-                    <td><input type="text" name="description" value="{{ task.description }}"></td>
-                    <td><input type="datetime-local" name="start_date_time" value="{{ task.start_date_time|date:'Y-m-d\TH:i' }}"></td>
-                    <td><input type="datetime-local" name="end_date_time" value="{{ task.end_date_time|date:'Y-m-d\TH:i' }}"></td>
+                    <td>{{ task.id }}</td>
                     <td>
                         <select name="associated_food_bank">
                             {% for foodbank in foodbanks %}
-                            <option value="{{ foodbank.id }}" {% if task.associated_food_bank_id == foodbank.id %}selected{% endif %}>{{ foodbank.street_address }}</option>
+                            <option value="{{ foodbank.id }}" {% if task.associated_food_bank_id == foodbank.id %}selected{% endif %}>{{ foodbank.street_address }}, {{foodbank.city}}, {{foodbank.home_state}}</option>
                             {% endfor %}
                         </select>
                     </td>
+                    <td><input type="text" name="description" value="{{ task.description }}"></td>
+                    <td><input type="datetime-local" name="start_date_time" value="{{ task.start_date_time|date:'Y-m-d\TH:i' }}"></td>
+                    <td><input type="datetime-local" name="end_date_time" value="{{ task.end_date_time|date:'Y-m-d\TH:i' }}"></td>
                     <td><input type="number" name="min_volunteers" value="{{ task.min_volunteers }}"></td>
                     <td><input type="number" name="max_volunteers" value="{{ task.max_volunteers }}"></td>
                     <td>
-                        <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'foodbank:task_delete' %}" name="delete">Delete</button>
+                        <button type="submit" name="edit">Save Edits</button>
+                        <button type="submit" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>

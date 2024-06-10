@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 class Volunteer(models.Model):
     id = models.AutoField(primary_key=True)
@@ -24,11 +25,11 @@ class FoodBank(models.Model):
 class Task(models.Model):
     id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=255)
-    start_date_time = models.DateTimeField()
-    end_date_time = models.DateTimeField()
+    start_date_time = models.DateTimeField(default=datetime.strptime('2000-01-01 09:00:00', "%Y-%m-%d %H:%M:%S"))
+    end_date_time = models.DateTimeField(default=datetime.strptime('2000-01-01 12:00:00', "%Y-%m-%d %H:%M:%S"))
     associated_food_bank = models.ForeignKey(FoodBank, on_delete=models.CASCADE, null=True, blank=True)
-    min_volunteers = models.IntegerField()
-    max_volunteers = models.IntegerField()
+    min_volunteers = models.IntegerField(default=0)
+    max_volunteers = models.IntegerField(default=10)
 
 class IndividualShift(models.Model):
     id = models.AutoField(primary_key=True)

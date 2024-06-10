@@ -74,10 +74,10 @@ def namedtuplefetchall(cursor):
     nt_result = namedtuple("Result", [col[0] for col in desc])
     return [nt_result(*row) for row in cursor.fetchall()]
 
-def execute_raw_sql(query):
+def execute_raw_sql(query, fetch=True):
     with connection.cursor() as cursor:
         cursor.execute(query)
-        res = namedtuplefetchall(cursor)
+        res = namedtuplefetchall(cursor) if fetch else None
     
     return res
 
@@ -203,7 +203,8 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
             foodbanks = foodbanks.filter(
                 Q(street_address__icontains=query) |
                 Q(city__icontains=query) |
-                Q(state__icontains=query) |
+                Q(home_state__icontains=query) |
+                Q(zip_code_icontains=query) |
                 Q(phone_number__icontains=query) |
                 Q(email__icontains=query)
             )
@@ -251,7 +252,6 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
                         newval = request.POST.get(name)
                         if name == 'manager':
                             newval = Volunteer.objects.get(id=newval)
-                        print(name, newval)
                         
                         foodbank.__setattr__(name, newval)
 
@@ -283,6 +283,164 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
         if Volunteer.objects.filter(pk=fk).exists():
             return True
         return False
+
+class TaskView(LoginRequiredMixin, generic.ListView):
+    login_url = "/login/"
+    redirect_field_name = ""
+    model=Task
+    foreign_model = FoodBank
+    context_object_name='tasks'
+    foreign_context_name = 'foodbanks'
+    template_name='task.html'
+    vols_per_task_exists = False
+
+    def get_queryset(self):
+        return self.model.objects.all()
+    
+    def get_foreign_queryset(self):
+        return self.foreign_model.objects.all()
+    
+    def get(self, req):
+        error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
+        entities = self.get_queryset()
+        foreign_entities = self.get_foreign_queryset()
+
+        query = req.GET.get('q')
+        if query:
+            entities = entities.filter(
+                Q(description__icontains=query) |
+                Q(start_date_time__icontains=query) |
+                Q(end_date_time__icontains=query)
+            )
+
+        # data summary queries
+        # number of tasks per food bank
+        tasks_per_fb = execute_raw_sql("SELECT associated_food_bank_id, COUNT(id) AS NumTasks FROM foodbank_task GROUP BY associated_food_bank_id;")
+
+        # create VolsPerTask view in DB
+        if not self.vols_per_task_exists:
+            _ = execute_raw_sql("DROP VIEW IF EXISTS foodbank_VolsPerTask;", fetch=False)
+            _ = execute_raw_sql("CREATE VIEW foodbank_VolsPerTask AS SELECT task_id, SUM(CurVolsSignedUp) as CurVolsSignedUp FROM (SELECT vt.task_id, COUNT(vt.volunteer_id) AS CurVolsSignedUp FROM foodbank_individualshift vt GROUP BY vt.task_id UNION SELECT t.id as task_id, 0 as CurVolsSignedUp FROM foodbank_task t) AS T GROUP BY task_id;", fetch=False)
+            self.vols_per_task_exists = True
+        
+        # get number of volunteers signed up for each task
+        cur_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        vols_per_task = execute_raw_sql("SELECT vpt.task_id AS t_id, t.description AS t_descr, t.start_date_time AS t_start, t.end_date_time AS t_end, fb.id AS fb_id, t.min_volunteers AS t_min, t.max_volunteers AS t_max, vpt.CurVolsSignedUp as t_cur "+\
+                              "FROM foodbank_VolsPerTask vpt JOIN foodbank_task t ON vpt.task_id=t.id JOIN foodbank_foodbank fb ON t.associated_food_bank_id=fb.id "+\
+                                f"WHERE vpt.CurVolsSignedUp < t.max_volunteers AND t.start_date_time > '{cur_datetime}';")
+
+        context = {
+            self.context_object_name: entities,
+            self.foreign_context_name: foreign_entities,
+            'tasks_per_fb': tasks_per_fb,
+            'vols_per_task': vols_per_task,
+            'volunteers': Volunteer.objects.all(),
+            'query': query,
+            'error_msg': error_msg,
+        }
+
+        return render(req, self.template_name, context)
+    
+    def post(self, request, *args, **kwargs):
+        if 'signup' in request.POST:
+            vol_id = request.POST.get('vol_signing_up')
+            vol = Volunteer.objects.get(id=vol_id)
+            task_id = request.POST.get('task_id')
+            task = Task.objects.get(id=task_id)
+
+            IndividualShift.objects.create(volunteer=vol, task=task)
+
+            return redirect(reverse('foodbank:'+self.context_object_name))
+        
+        field_name_to_newval = {}
+        error_msgs = []
+
+        textFields = ['description']
+        intFields = ['min_volunteers', 'max_volunteers']
+        datetimeFields = ['start_date_time', 'end_date_time']
+        foreignKeyFields = ['associated_food_bank']
+
+        for field in self.model._meta.get_fields():
+            name = field.name
+            if name in request.POST and request.POST.get(name) != "":
+                field_name_to_newval[name] = request.POST.get(name)
+
+        if self.validateTextFields([field_name_to_newval[f] for f in textFields], error_msgs) \
+            and self.validateIntFields([field_name_to_newval[f] for f in intFields], error_msgs) \
+            and self.validateDateTimeFields([field_name_to_newval[f] for f in datetimeFields], error_msgs) \
+            and self.validateForeignKey([field_name_to_newval[f] for f in foreignKeyFields], error_msgs):
+            if 'add' in request.POST:
+                new_entity = self.model.objects.create()
+
+                for field_name, val in field_name_to_newval.items():
+                    if field_name != 'id':
+                        if field_name in foreignKeyFields:
+                            val = self.foreign_model.objects.get(id=val)
+                        if field_name in datetimeFields:
+                            print(val, print(type(val)))
+                        
+                        new_entity.__setattr__(field_name, val)
+
+                new_entity.save()
+
+            elif 'edit' in request.POST:
+                entity_id = request.POST.get(self.model._meta.model_name + '_id')
+                entity = self.model.objects.get(id=entity_id)
+
+                for field_name, val in field_name_to_newval.items():
+                    if field_name != 'id':
+                        if field_name in foreignKeyFields:
+                            val = self.foreign_model.objects.get(id=val)
+                        
+                        entity.__setattr__(field_name, val)
+
+                entity.save()
+            elif 'delete' in request.POST:
+                entity_id = request.POST.get(self.model._meta.model_name + '_id')
+
+                try:
+                    self.model.objects.get(id=entity_id).delete()
+                except self.model.DoesNotExist:
+                    error_msg = 'Error when deleting ' + self.model._meta + ' ' + str(entity_id) + ': entity does not exist'
+                    return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+error_msg)
+            
+            return redirect(reverse('foodbank:'+self.context_object_name))
+        else:
+            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
+
+
+    def validateTextFields(self, fields, error_msgs):
+        for field in fields:
+            if field == "":
+                error_msgs.append('No text fields can be empty')
+                return False
+            
+        return True
+    
+    def validateIntFields(self, fields, error_msgs):
+        for field in fields:
+            try:
+                tmp = int(field)
+            except ValueError:
+                error_msgs.append('Integer fields must have integer values')
+                return False
+            
+        return True
+    
+    def validateDateTimeFields(self, fields, error_msgs):
+        for field in fields:
+            if field == "":
+                error_msgs.append('No datetime fields can be empty')
+                return False
+            
+        return True
+    
+    def validateForeignKey(self, fks, error_msgs):
+        if self.foreign_model.objects.filter(pk=fks[0]).exists():
+            return True
+        error_msgs.append('Foreign key value must correspond to an entity that exists within foreign table')
+        return False
+
 
 @login_required(login_url='/login/')  
 def task_view(request):
