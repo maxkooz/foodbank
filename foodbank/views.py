@@ -12,7 +12,7 @@ from .models import Volunteer, FoodBank, Task, Volunteer_Task, Vehicle, TransitS
     RecipientOrganization, DistributedFoodItem, Donator, FoodGroup
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import namedtuple
 
 def home_view(request):
@@ -574,55 +574,118 @@ class VehcileView(LoginRequiredMixin, generic.ListView):
         error_msgs.append('Foreign key value must correspond to an entity that exists within foreign table')
         return False
 
-@login_required(login_url='/login/')
-def vehicle_view(request):
-    vehicles = Vehicle.objects.all()
-    volunteers = Volunteer.objects.all()
+class TransitView(LoginRequiredMixin, generic.ListView):
+    login_url = "/login/"
+    redirect_field_name = ""
+    model=TransitSchedule
+    foreign_model = Vehicle
+    context_object_name='transits'
+    foreign_context_name = 'vehicles'
+    template_name='transit.html'
 
-    query = request.GET.get('q')
-    if query:
-        vehicles = vehicles.filter(
-            Q(driver_volunteer__first_name__icontains=query) |
-            Q(driver_volunteer__last_name__icontains=query) |
-            Q(vehicle_type__icontains=query)
-        )
+    datetimeFields = ['arrival_date_time', 'departure_date_time']
+    intFields = ['current_available_capacity']
+    foreignKeyFields = ['vehicle']
 
-    if request.method == 'POST':
-        vehicle_type = request.POST.get('vehicle_type')
-        total_passenger_capacity = request.POST.get('total_passenger_capacity')
-        driver_volunteer_id = request.POST.get('driver_volunteer')
+    def get_queryset(self):
+        return self.model.objects.all()
+    
+    def get_foreign_queryset(self):
+        return self.foreign_model.objects.all()
+    
+    def get(self, req):
+        error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
+        entities = self.get_queryset()
+        foreign_entities = self.get_foreign_queryset()
 
-        vehicle_id = request.POST.get('vehicle_id')  # Get the ID of the vehicle
+        query = req.GET.get('q')
+        # if query:
+        #     entities = entities.filter(
+        #         Q(vehcile_type__icontains=query)
+        #     )
 
-        if vehicle_id:  # If the ID exists, update the existing entry
-            vehicle = Vehicle.objects.get(id=vehicle_id)
-            vehicle.driver_volunteer_id = driver_volunteer_id
-            vehicle.vehicle_type = vehicle_type
-            vehicle.total_passenger_capacity = total_passenger_capacity
-            vehicle.save()
-        else:  # If the ID does not exist, create a new entry
-            Vehicle.objects.create(
-                driver_volunteer_id=driver_volunteer_id,
-                vehicle_type=vehicle_type,
-                total_passenger_capacity=total_passenger_capacity
-            )
+        # data summary queries
+        today = datetime.now()
+        tomorrow = today + timedelta(days=1)
+        today = today.strftime("%Y-%m-%d")
+        tomorrow = tomorrow.strftime("%Y-%m-%d")
+        print(today, tomorrow)
+        transits_today = execute_raw_sql(f"SELECT ts.id AS ts_id, ts.current_available_capacity, vo.first_name, vo.last_name, ve.vehicle_type FROM foodbank_transitschedule ts JOIN foodbank_vehicle ve ON ts.vehicle_id=ve.id JOIN foodbank_volunteer vo ON vo.id=ve.driver_volunteer_id WHERE ts.current_available_capacity > 0 AND ts.arrival_date_time BETWEEN '{today}' AND '{tomorrow}';")
+        
 
-        return redirect(reverse('foodbank:vehicles'))
+        context = {
+            self.context_object_name: entities,
+            self.foreign_context_name: foreign_entities,
+            'transits_today': transits_today,
+            'query': query,
+            'error_msg': error_msg,
+        }
 
-    context = {
-        'vehicles': vehicles,
-        'volunteers': volunteers,
-        'query': query,
-    }
-    return render(request, 'vehicle.html', context)
+        return render(req, self.template_name, context)
+    
+    def post(self, request, *args, **kwargs):
+        # current just decrements available capacity on join   
+        if 'join' in request.POST:
+            transit_id = request.POST.get('transit_id')
+            transit = self.model.objects.get(id=transit_id)
+            transit.current_available_capacity -= 1
+            transit.save()
 
-@login_required(login_url='/login/')
-def vehicle_delete(request):
-    if request.method == 'POST':
-        vehicle_id = request.POST.get('vehicle_id')
-        vehicle = get_object_or_404(Vehicle, id=vehicle_id)
-        vehicle.delete()
-    return redirect(reverse('foodbank:vehicles'))
+            return redirect(reverse("foodbank:"+self.context_object_name))
+
+        field_name_to_newval = {}
+        error_msgs = []
+
+        for field in self.model._meta.get_fields():
+            name = field.name
+            if name in request.POST and request.POST.get(name) != "":
+                field_name_to_newval[name] = request.POST.get(name)
+
+        if validateDateTimeFields([field_name_to_newval[f] for f in self.datetimeFields], error_msgs) \
+            and validateIntFields([field_name_to_newval[f] for f in self.intFields], error_msgs) \
+            and self.validateForeignKey([field_name_to_newval[f] for f in self.foreignKeyFields], error_msgs):
+            if 'add' in request.POST:
+                new_entity = self.model.objects.create()
+
+                for field_name, val in field_name_to_newval.items():
+                    if field_name != 'id':
+                        if field_name in self.foreignKeyFields:
+                            val = self.foreign_model.objects.get(id=val)
+                        
+                        new_entity.__setattr__(field_name, val)
+
+                new_entity.save()
+
+            elif 'edit' in request.POST:
+                entity_id = request.POST.get('transit_id')
+                entity = self.model.objects.get(id=entity_id)
+
+                for field_name, val in field_name_to_newval.items():
+                    if field_name != 'id':
+                        if field_name in self.foreignKeyFields:
+                            val = self.foreign_model.objects.get(id=val)
+                        
+                        entity.__setattr__(field_name, val)
+
+                entity.save()
+            elif 'delete' in request.POST:
+                entity_id = request.POST.get('transit_id')
+
+                try:
+                    self.model.objects.get(id=entity_id).delete()
+                except self.model.DoesNotExist:
+                    error_msg = 'Error when deleting ' + self.model._meta + ' ' + str(entity_id) + ': entity does not exist'
+                    return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+error_msg)
+            
+            return redirect(reverse('foodbank:'+self.context_object_name))
+        else:
+            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
+    
+    def validateForeignKey(self, fks, error_msgs):
+        if self.foreign_model.objects.filter(pk=fks[0]).exists():
+            return True
+        error_msgs.append('Foreign key value must correspond to an entity that exists within foreign table')
+        return False
 
 @login_required(login_url='/login/')
 def transit_view(request):

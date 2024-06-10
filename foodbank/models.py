@@ -45,9 +45,9 @@ class Vehicle(models.Model):
 class TransitSchedule(models.Model):
     id = models.AutoField(primary_key=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True, blank=True)
-    arrival_period_of_operation = models.DateTimeField()
-    departure_period_of_operation = models.DateTimeField()
-    current_available_capacity = models.IntegerField()
+    arrival_date_time = models.DateTimeField(default=datetime.strptime('2000-01-01 09:00:00', "%Y-%m-%d %H:%M:%S"))
+    departure_date_time = models.DateTimeField(default=datetime.strptime('2000-01-01 12:00:00', "%Y-%m-%d %H:%M:%S"))
+    current_available_capacity = models.IntegerField(default=0)
 
 class Donator(models.Model):
     id = models.AutoField(primary_key=True)
