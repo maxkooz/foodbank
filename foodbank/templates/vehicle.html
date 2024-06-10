@@ -8,11 +8,18 @@
 </head>
 <body>
     <h1>Vehicles</h1>
+
+    {% if error_msg %}
+    <p style="color:red;">{{error_msg}}</p>
+    {% endif %}
+
     <form method="GET">
         <label for="q">Search:</label>
         <input type="text" id="q" name="q" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
+
+    <!-- All vehicle entities -->
     <table border="1">
         <thead>
             <tr>
@@ -29,24 +36,49 @@
                     {% csrf_token %}
                     <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
                     <td>
-                        <select name="driver_volunteer">
-    <option value="" {% if not vehicle.driver_volunteer %} selected {% endif %}>Select Driver</option>
-    {% for volunteer in volunteers %}
-        <option value="{{ volunteer.id }}" {% if vehicle.driver_volunteer_id == volunteer.id %} selected {% endif %}>{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
-    {% endfor %}
-</select>
+                    <select name="driver_volunteer">
+                        <option value="" {% if not vehicle.driver_volunteer %} selected {% endif %}>Select Driver</option>
+                        {% for volunteer in volunteers %}
+                            <option value="{{ volunteer.id }}" {% if vehicle.driver_volunteer_id == volunteer.id %} selected {% endif %}>{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+                        {% endfor %}
+                    </select>
                     </td>
                     <td><input type="text" name="vehicle_type" value="{{ vehicle.vehicle_type }}"></td>
                     <td><input type="number" name="total_passenger_capacity" value="{{ vehicle.total_passenger_capacity }}"></td>
                     <td>
-                        <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'foodbank:vehicle_delete' %}" name="delete">Delete</button>
+                        <button type="submit" name="edit">Save Edits</button>
+                        <button type="submit" name="delete">Delete</button>
                     </td>
                 </form>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Data Summary -->
+    <h2>Data Summary</h2>
+
+    <h4>Number of vehicles of each type and their cumulative passenger capacity</h4>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Vehicle Type</th>
+                <th>Number of Vehicles</th>
+                <th>Cumulative Capacity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in vehicles_per_type %}
+            <tr>
+                <td>{{ row.vehicle_type }}</td>
+                <td>{{ row.num_vehicles }}</td>
+                <td>{{ row.cum_capacity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add vehicle entity -->
     <h2>Add Vehicle</h2>
     <form method="POST">
         {% csrf_token %}

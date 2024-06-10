@@ -39,8 +39,8 @@ class Volunteer_Task(models.Model):
 class Vehicle(models.Model):
     id = models.AutoField(primary_key=True)
     driver_volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=True, blank=True)
-    vehicle_type = models.CharField(max_length=255)
-    total_passenger_capacity = models.IntegerField()
+    vehicle_type = models.CharField(max_length=255, default="")
+    total_passenger_capacity = models.IntegerField(default=0)
 
 class TransitSchedule(models.Model):
     id = models.AutoField(primary_key=True)

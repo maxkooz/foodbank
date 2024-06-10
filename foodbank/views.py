@@ -132,7 +132,7 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         email = request.POST.get('email')
 
         # Check that at least one field is not empty
-        if self.validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email]):            
+        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email]):            
             if 'add' in request.POST:
             
                 Volunteer.objects.create(
@@ -174,13 +174,6 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
 
 
         return redirect(reverse("foodbank:volunteers"))
-        
-    def validateTextFields(self, fields):
-        for field in fields:
-            if field == "":
-                return False
-            
-        return True
 
 
 class FoodBankView(LoginRequiredMixin, generic.ListView):
@@ -231,7 +224,7 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
         phone_number = request.POST.get('phone_number')
         email = request.POST.get('email')
 
-        if self.validateTextFields([street_address, city, home_state, zip_code, phone_number, email]) and self.validateForeignKey(manager):
+        if validateTextFields([street_address, city, home_state, zip_code, phone_number, email]) and self.validateForeignKey(manager):
             if 'add' in request.POST:
                 FoodBank.objects.create(
                     street_address=street_address,
@@ -270,14 +263,6 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
         else:
             error_msg = 'All fields are required to create object'
             return redirect(reverse("foodbank:foodbanks")+'?error_msg='+error_msg)
-
-
-    def validateTextFields(self, fields):
-        for field in fields:
-            if field == "":
-                return False
-            
-        return True
     
     def validateForeignKey(self, fk):
         if Volunteer.objects.filter(pk=fk).exists():
@@ -320,6 +305,11 @@ class TaskView(LoginRequiredMixin, generic.ListView):
     foreign_context_name = 'foodbanks'
     template_name='task.html'
     vols_per_task_exists = False
+
+    textFields = ['description']
+    intFields = ['min_volunteers', 'max_volunteers']
+    datetimeFields = ['start_date_time', 'end_date_time']
+    foreignKeyFields = ['associated_food_bank']
 
     def get_queryset(self):
         return self.model.objects.all()
@@ -382,28 +372,23 @@ class TaskView(LoginRequiredMixin, generic.ListView):
         field_name_to_newval = {}
         error_msgs = []
 
-        textFields = ['description']
-        intFields = ['min_volunteers', 'max_volunteers']
-        datetimeFields = ['start_date_time', 'end_date_time']
-        foreignKeyFields = ['associated_food_bank']
-
         for field in self.model._meta.get_fields():
             name = field.name
             if name in request.POST and request.POST.get(name) != "":
                 field_name_to_newval[name] = request.POST.get(name)
 
-        if validateTextFields([field_name_to_newval[f] for f in textFields], error_msgs) \
-            and validateIntFields([field_name_to_newval[f] for f in intFields], error_msgs) \
-            and validateDateTimeFields([field_name_to_newval[f] for f in datetimeFields], error_msgs) \
-            and self.validateForeignKey([field_name_to_newval[f] for f in foreignKeyFields], error_msgs):
+        if validateTextFields([field_name_to_newval[f] for f in self.textFields], error_msgs) \
+            and validateIntFields([field_name_to_newval[f] for f in self.intFields], error_msgs) \
+            and validateDateTimeFields([field_name_to_newval[f] for f in self.datetimeFields], error_msgs) \
+            and self.validateForeignKey([field_name_to_newval[f] for f in self.foreignKeyFields], error_msgs):
             if 'add' in request.POST:
                 new_entity = self.model.objects.create()
 
                 for field_name, val in field_name_to_newval.items():
                     if field_name != 'id':
-                        if field_name in foreignKeyFields:
+                        if field_name in self.foreignKeyFields:
                             val = self.foreign_model.objects.get(id=val)
-                        if field_name in datetimeFields:
+                        if field_name in self.datetimeFields:
                             print(val, print(type(val)))
                         
                         new_entity.__setattr__(field_name, val)
@@ -416,7 +401,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
 
                 for field_name, val in field_name_to_newval.items():
                     if field_name != 'id':
-                        if field_name in foreignKeyFields:
+                        if field_name in self.foreignKeyFields:
                             val = self.foreign_model.objects.get(id=val)
                         
                         entity.__setattr__(field_name, val)
@@ -490,6 +475,104 @@ def volunteer_task_delete(request):
         shift = get_object_or_404(Volunteer_Task, id=shift_id)
         shift.delete()
     return redirect(reverse('foodbank:volunteer_tasks'))
+
+class VehcileView(LoginRequiredMixin, generic.ListView):
+    login_url = "/login/"
+    redirect_field_name = ""
+    model=Vehicle
+    foreign_model = Volunteer
+    context_object_name='vehicles'
+    foreign_context_name = 'volunteers'
+    template_name='vehicle.html'
+
+    textFields = ['vehicle_type']
+    intFields = ['total_passenger_capacity']
+    foreignKeyFields = ['driver_volunteer']
+
+    def get_queryset(self):
+        return self.model.objects.all()
+    
+    def get_foreign_queryset(self):
+        return self.foreign_model.objects.all()
+    
+    def get(self, req):
+        error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
+        entities = self.get_queryset()
+        foreign_entities = self.get_foreign_queryset()
+
+        query = req.GET.get('q')
+        if query:
+            entities = entities.filter(
+                Q(vehcile_type__icontains=query)
+            )
+
+        # data summary queries
+        vehicles_per_type = execute_raw_sql("SELECT vehicle_type, COUNT(id) as num_vehicles, SUM(total_passenger_capacity) as cum_capacity FROM foodbank_vehicle GROUP BY vehicle_type;")
+  
+        context = {
+            self.context_object_name: entities,
+            self.foreign_context_name: foreign_entities,
+            'vehicles_per_type': vehicles_per_type,
+            'query': query,
+            'error_msg': error_msg,
+        }
+
+        return render(req, self.template_name, context)
+    
+    def post(self, request, *args, **kwargs):        
+        field_name_to_newval = {}
+        error_msgs = []
+
+        for field in self.model._meta.get_fields():
+            name = field.name
+            if name in request.POST and request.POST.get(name) != "":
+                field_name_to_newval[name] = request.POST.get(name)
+
+        if validateTextFields([field_name_to_newval[f] for f in self.textFields], error_msgs) \
+            and validateIntFields([field_name_to_newval[f] for f in self.intFields], error_msgs) \
+            and self.validateForeignKey([field_name_to_newval[f] for f in self.foreignKeyFields], error_msgs):
+            if 'add' in request.POST:
+                new_entity = self.model.objects.create()
+
+                for field_name, val in field_name_to_newval.items():
+                    if field_name != 'id':
+                        if field_name in self.foreignKeyFields:
+                            val = self.foreign_model.objects.get(id=val)
+                        
+                        new_entity.__setattr__(field_name, val)
+
+                new_entity.save()
+
+            elif 'edit' in request.POST:
+                entity_id = request.POST.get(self.model._meta.model_name + '_id')
+                entity = self.model.objects.get(id=entity_id)
+
+                for field_name, val in field_name_to_newval.items():
+                    if field_name != 'id':
+                        if field_name in self.foreignKeyFields:
+                            val = self.foreign_model.objects.get(id=val)
+                        
+                        entity.__setattr__(field_name, val)
+
+                entity.save()
+            elif 'delete' in request.POST:
+                entity_id = request.POST.get(self.model._meta.model_name + '_id')
+
+                try:
+                    self.model.objects.get(id=entity_id).delete()
+                except self.model.DoesNotExist:
+                    error_msg = 'Error when deleting ' + self.model._meta + ' ' + str(entity_id) + ': entity does not exist'
+                    return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+error_msg)
+            
+            return redirect(reverse('foodbank:'+self.context_object_name))
+        else:
+            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
+    
+    def validateForeignKey(self, fks, error_msgs):
+        if self.foreign_model.objects.filter(pk=fks[0]).exists():
+            return True
+        error_msgs.append('Foreign key value must correspond to an entity that exists within foreign table')
+        return False
 
 @login_required(login_url='/login/')
 def vehicle_view(request):

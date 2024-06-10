@@ -1,4 +1,9 @@
 <h1>Volunteer_Tasks</h1>
+
+{% if error_msg %}
+<p style="color:red;">{{error_msg}}</p>
+{% endif %}
+
 <form method="GET">
     <label for="q">Search:</label>
     <input type="text" id="q" name="q" value="{{ query }}">
