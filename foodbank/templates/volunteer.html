@@ -35,7 +35,7 @@
             <tr>
                 <form method="POST" action="{% url 'foodbank:volunteers' %}">
                     {% csrf_token %}
-                    <td><input type="text" name="volunteer_id" value="{{ volunteer.id }}"></td>
+                    <td>{{ volunteer.id }}</td>
                     <td><input type="text" name="first_name" value="{{ volunteer.first_name }}"></td>
                     <td><input type="text" name="last_name" value="{{ volunteer.last_name }}"></td>
                     <td><input type="text" name="street_address" value="{{ volunteer.street_address }}"></td>
