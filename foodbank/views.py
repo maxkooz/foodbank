@@ -564,7 +564,7 @@ def fooditem_view(request):
                 donator_id=donator_id
             )
 
-        return redirect(reverse('foodbank:food_items'))
+        return redirect(reverse('foodbank:fooditems'))
 
     context = {
         'fooditems': fooditems,
@@ -581,7 +581,7 @@ def fooditem_delete(request):
         fooditem_id = request.POST.get('fooditem_id')
         fooditem = get_object_or_404(FoodItem, id=fooditem_id)
         fooditem.delete()
-    return redirect(reverse('foodbank:food_items'))
+    return redirect(reverse('foodbank:fooditems'))
 
 @login_required(login_url='/login/')
 def recipient_organization_view(request):

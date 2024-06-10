@@ -59,9 +59,10 @@
                         </select>
                     </td>
                     <td>
-                        <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'foodbank:fooditem_delete' %}" name="delete">Delete</button>
-                    </td>
+    <button type="submit" name="save">Save</button>
+    <button type="submit" formaction="{% url 'foodbank:fooditem_delete' %}" name="delete">Delete</button>
+</td>
+
                 </form>
             </tr>
             {% endfor %}
