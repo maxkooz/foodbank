@@ -1,4 +1,4 @@
-<h1>Individual Shifts</h1>
+<h1>Volunteer_Tasks</h1>
 <form method="GET">
     <label for="q">Search:</label>
     <input type="text" id="q" name="q" value="{{ query }}">
@@ -34,14 +34,14 @@
                 </td>
                 <td>
                     <button type="submit" name="save">Save</button>
-                    <button type="submit" formaction="{% url 'foodbank:individual_shift_delete' %}" name="delete">Delete</button>
+                    <button type="submit" formaction="{% url 'foodbank:volunteer_task_delete' %}" name="delete">Delete</button>
                 </td>
             </form>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-<h2>Add Individual Shift</h2>
+<h2>Add Volunteer_Task</h2>
 <form method="POST">
     {% csrf_token %}
     <label for="volunteer">Volunteer:</label>
@@ -56,7 +56,7 @@
         <option value="{{ task.id }}">{{ task.description }}</option>
         {% endfor %}
     </select><br>
-    <button type="submit" name="add">Add Individual Shift</button>
+    <button type="submit" name="add">Add Volunteer_Task</button>
 
     <h2>Return to Main Page</h2>
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>

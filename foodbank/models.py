@@ -31,7 +31,7 @@ class Task(models.Model):
     min_volunteers = models.IntegerField(default=0)
     max_volunteers = models.IntegerField(default=10)
 
-class IndividualShift(models.Model):
+class Volunteer_Task(models.Model):
     id = models.AutoField(primary_key=True)
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=True, blank=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True)

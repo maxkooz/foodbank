@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import connection
 
-from .models import Volunteer, FoodBank, Task, IndividualShift, Vehicle, TransitSchedule, FoodItem, \
+from .models import Volunteer, FoodBank, Task, Volunteer_Task, Vehicle, TransitSchedule, FoodItem, \
     RecipientOrganization, DistributedFoodItem, Donator, FoodGroup
 
 import re
@@ -284,6 +284,33 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
             return True
         return False
 
+def validateTextFields(fields, error_msgs):
+    for field in fields:
+        if field == "":
+            error_msgs.append('No text fields can be empty')
+            return False
+        
+    return True
+
+def validateIntFields(fields, error_msgs):
+    for field in fields:
+        try:
+            tmp = int(field)
+        except ValueError:
+            error_msgs.append('Integer fields must have integer values')
+            return False
+        
+    return True
+
+def validateDateTimeFields(fields, error_msgs):
+    for field in fields:
+        if field == "":
+            error_msgs.append('No datetime fields can be empty')
+            return False
+        
+    return True
+
+
 class TaskView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"
     redirect_field_name = ""
@@ -320,7 +347,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
         # create VolsPerTask view in DB
         if not self.vols_per_task_exists:
             _ = execute_raw_sql("DROP VIEW IF EXISTS foodbank_VolsPerTask;", fetch=False)
-            _ = execute_raw_sql("CREATE VIEW foodbank_VolsPerTask AS SELECT task_id, SUM(CurVolsSignedUp) as CurVolsSignedUp FROM (SELECT vt.task_id, COUNT(vt.volunteer_id) AS CurVolsSignedUp FROM foodbank_individualshift vt GROUP BY vt.task_id UNION SELECT t.id as task_id, 0 as CurVolsSignedUp FROM foodbank_task t) AS T GROUP BY task_id;", fetch=False)
+            _ = execute_raw_sql("CREATE VIEW foodbank_VolsPerTask AS SELECT task_id, SUM(CurVolsSignedUp) as CurVolsSignedUp FROM (SELECT vt.task_id, COUNT(vt.volunteer_id) AS CurVolsSignedUp FROM foodbank_volunteer_task vt GROUP BY vt.task_id UNION SELECT t.id as task_id, 0 as CurVolsSignedUp FROM foodbank_task t) AS T GROUP BY task_id;", fetch=False)
             self.vols_per_task_exists = True
         
         # get number of volunteers signed up for each task
@@ -348,7 +375,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             task_id = request.POST.get('task_id')
             task = Task.objects.get(id=task_id)
 
-            IndividualShift.objects.create(volunteer=vol, task=task)
+            Volunteer_Task.objects.create(volunteer=vol, task=task)
 
             return redirect(reverse('foodbank:'+self.context_object_name))
         
@@ -365,9 +392,9 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             if name in request.POST and request.POST.get(name) != "":
                 field_name_to_newval[name] = request.POST.get(name)
 
-        if self.validateTextFields([field_name_to_newval[f] for f in textFields], error_msgs) \
-            and self.validateIntFields([field_name_to_newval[f] for f in intFields], error_msgs) \
-            and self.validateDateTimeFields([field_name_to_newval[f] for f in datetimeFields], error_msgs) \
+        if validateTextFields([field_name_to_newval[f] for f in textFields], error_msgs) \
+            and validateIntFields([field_name_to_newval[f] for f in intFields], error_msgs) \
+            and validateDateTimeFields([field_name_to_newval[f] for f in datetimeFields], error_msgs) \
             and self.validateForeignKey([field_name_to_newval[f] for f in foreignKeyFields], error_msgs):
             if 'add' in request.POST:
                 new_entity = self.model.objects.create()
@@ -407,33 +434,6 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             return redirect(reverse('foodbank:'+self.context_object_name))
         else:
             return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
-
-
-    def validateTextFields(self, fields, error_msgs):
-        for field in fields:
-            if field == "":
-                error_msgs.append('No text fields can be empty')
-                return False
-            
-        return True
-    
-    def validateIntFields(self, fields, error_msgs):
-        for field in fields:
-            try:
-                tmp = int(field)
-            except ValueError:
-                error_msgs.append('Integer fields must have integer values')
-                return False
-            
-        return True
-    
-    def validateDateTimeFields(self, fields, error_msgs):
-        for field in fields:
-            if field == "":
-                error_msgs.append('No datetime fields can be empty')
-                return False
-            
-        return True
     
     def validateForeignKey(self, fks, error_msgs):
         if self.foreign_model.objects.filter(pk=fks[0]).exists():
@@ -442,71 +442,9 @@ class TaskView(LoginRequiredMixin, generic.ListView):
         return False
 
 
-@login_required(login_url='/login/')  
-def task_view(request):
-    tasks = Task.objects.all()
-    foodbanks = FoodBank.objects.all()
-
-    query = request.GET.get('q')
-    if query:
-        tasks = tasks.filter(
-            Q(description__icontains=query) |
-            Q(start_date_time__icontains=query) |
-            Q(end_date_time__icontains=query) |
-            Q(associated_food_bank__street_address__icontains=query) |
-            Q(min_volunteers__icontains=query) |
-            Q(max_volunteers__icontains=query)
-        )
-
-    if request.method == 'POST':
-        description = request.POST.get('description')
-        start_date_time = request.POST.get('start_date_time')
-        end_date_time = request.POST.get('end_date_time')
-        associated_food_bank_id = request.POST.get('associated_food_bank')
-        min_volunteers = request.POST.get('min_volunteers')
-        max_volunteers = request.POST.get('max_volunteers')
-
-        task_id = request.POST.get('task_id')  # Get the ID of the task
-
-        if task_id:  # If the ID exists, update the existing entry
-            task = Task.objects.get(id=task_id)
-            task.description = description
-            task.start_date_time = start_date_time
-            task.end_date_time = end_date_time
-            task.associated_food_bank_id = associated_food_bank_id
-            task.min_volunteers = min_volunteers
-            task.max_volunteers = max_volunteers
-            task.save()
-        else:  # If the ID does not exist, create a new entry
-            Task.objects.create(
-                description=description,
-                start_date_time=start_date_time,
-                end_date_time=end_date_time,
-                associated_food_bank_id=associated_food_bank_id,
-                min_volunteers=min_volunteers,
-                max_volunteers=max_volunteers
-            )
-
-        return redirect(reverse('foodbank:tasks'))
-
-    context = {
-        'tasks': tasks,
-        'foodbanks': foodbanks,
-        'query': query,
-    }
-    return render(request, 'task.html', context)
-
 @login_required(login_url='/login/')
-def task_delete(request):
-    if request.method == 'POST':
-        task_id = request.POST.get('task_id')
-        task = get_object_or_404(Task, id=task_id)
-        task.delete()
-    return redirect(reverse('foodbank:tasks'))
-
-@login_required(login_url='/login/')
-def individual_shift_view(request):
-    shifts = IndividualShift.objects.all()
+def volunteer_task_view(request):
+    shifts = Volunteer_Task.objects.all()
     volunteers = Volunteer.objects.all()
     tasks = Task.objects.all()
 
@@ -525,17 +463,17 @@ def individual_shift_view(request):
         shift_id = request.POST.get('shift_id')  # Get the ID of the shift
 
         if shift_id:  # If the ID exists, update the existing entry
-            shift = IndividualShift.objects.get(id=shift_id)
+            shift = Volunteer_Task.objects.get(id=shift_id)
             shift.volunteer_id = volunteer_id
             shift.task_id = task_id
             shift.save()
         else:  # If the ID does not exist, create a new entry
-            IndividualShift.objects.create(
+            Volunteer_Task.objects.create(
                 volunteer_id=volunteer_id,
                 task_id=task_id
             )
 
-        return redirect(reverse('foodbank:individual_shifts'))
+        return redirect(reverse('foodbank:volunteer_tasks'))
 
     context = {
         'shifts': shifts,
@@ -543,15 +481,15 @@ def individual_shift_view(request):
         'tasks': tasks,
         'query': query,
     }
-    return render(request, 'individual_shift.html', context)
+    return render(request, 'volunteer_task.html', context)
 
 @login_required(login_url='/login/')
-def individual_shift_delete(request):
+def volunteer_task_delete(request):
     if request.method == 'POST':
         shift_id = request.POST.get('shift_id')
-        shift = get_object_or_404(IndividualShift, id=shift_id)
+        shift = get_object_or_404(Volunteer_Task, id=shift_id)
         shift.delete()
-    return redirect(reverse('foodbank:individual_shifts'))
+    return redirect(reverse('foodbank:volunteer_tasks'))
 
 @login_required(login_url='/login/')
 def vehicle_view(request):
