@@ -74,10 +74,10 @@ def namedtuplefetchall(cursor):
     nt_result = namedtuple("Result", [col[0] for col in desc])
     return [nt_result(*row) for row in cursor.fetchall()]
 
-def execute_raw_sql(query):
+def execute_raw_sql(query, fetch=True):
     with connection.cursor() as cursor:
         cursor.execute(query)
-        res = namedtuplefetchall(cursor)
+        res = namedtuplefetchall(cursor) if fetch else None
     
     return res
 
@@ -292,6 +292,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
     context_object_name='tasks'
     foreign_context_name = 'foodbanks'
     template_name='task.html'
+    vols_per_task_exists = False
 
     def get_queryset(self):
         return self.model.objects.all()
@@ -313,11 +314,27 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             )
 
         # data summary queries
-        # res = execute_raw_sql("SELECT city, COUNT(id) AS NumFoodBanks FROM foodbank_foodbank GROUP BY city;")
+        # number of tasks per food bank
+        tasks_per_fb = execute_raw_sql("SELECT associated_food_bank_id, COUNT(id) AS NumTasks FROM foodbank_task GROUP BY associated_food_bank_id;")
+
+        # create VolsPerTask view in DB
+        if not self.vols_per_task_exists:
+            _ = execute_raw_sql("DROP VIEW IF EXISTS foodbank_VolsPerTask;", fetch=False)
+            _ = execute_raw_sql("CREATE VIEW foodbank_VolsPerTask AS SELECT task_id, SUM(CurVolsSignedUp) as CurVolsSignedUp FROM (SELECT vt.task_id, COUNT(vt.volunteer_id) AS CurVolsSignedUp FROM foodbank_individualshift vt GROUP BY vt.task_id UNION SELECT t.id as task_id, 0 as CurVolsSignedUp FROM foodbank_task t) AS T GROUP BY task_id;", fetch=False)
+            self.vols_per_task_exists = True
+        
+        # get number of volunteers signed up for each task
+        cur_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        vols_per_task = execute_raw_sql("SELECT vpt.task_id AS t_id, t.description AS t_descr, t.start_date_time AS t_start, t.end_date_time AS t_end, fb.id AS fb_id, t.min_volunteers AS t_min, t.max_volunteers AS t_max, vpt.CurVolsSignedUp as t_cur "+\
+                              "FROM foodbank_VolsPerTask vpt JOIN foodbank_task t ON vpt.task_id=t.id JOIN foodbank_foodbank fb ON t.associated_food_bank_id=fb.id "+\
+                                f"WHERE vpt.CurVolsSignedUp < t.max_volunteers AND t.start_date_time > '{cur_datetime}';")
 
         context = {
             self.context_object_name: entities,
             self.foreign_context_name: foreign_entities,
+            'tasks_per_fb': tasks_per_fb,
+            'vols_per_task': vols_per_task,
+            'volunteers': Volunteer.objects.all(),
             'query': query,
             'error_msg': error_msg,
         }
@@ -325,6 +342,16 @@ class TaskView(LoginRequiredMixin, generic.ListView):
         return render(req, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
+        if 'signup' in request.POST:
+            vol_id = request.POST.get('vol_signing_up')
+            vol = Volunteer.objects.get(id=vol_id)
+            task_id = request.POST.get('task_id')
+            task = Task.objects.get(id=task_id)
+
+            IndividualShift.objects.create(volunteer=vol, task=task)
+
+            return redirect(reverse('foodbank:'+self.context_object_name))
+        
         field_name_to_newval = {}
         error_msgs = []
 
