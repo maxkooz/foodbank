@@ -1,4 +1,3 @@
-<!-- volunteer.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,107 +5,192 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volunteers</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            font-family: 'Libre Baskerville', serif;
+            background-color: #add8e6;
+            color: #1d3557;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #1d3557;
+        }
+        .form-container, .data-summary, .add-volunteer, .main-page {
+            width: 80%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        label {
+            margin: 5px 0;
+        }
+        input[type="text"], input[type="email"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 5px;
+            background-color: #FFDBBB;
+            color: darkorange;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
 </head>
 <body>
-    <h1>Volunteers</h1>
-
-    {% if error_msg %}
-    <p style="color:red;">{{error_msg}}</p>
-    {% endif %}
-
-    <!-- Search entities -->
+<h1>Volunteers</h1>
+<!-- Search entities -->
+<div class="form-container">
     <form method="GET" action="{% url 'foodbank:volunteers' %}">
         <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
-    <!-- Display entities in table -->
-    <table border="1">
+</div>
+
+<!-- Display entities in table -->
+<div class="form-container">
+    <table style="table-layout: fixed;">
         <thead>
-            <tr>
-                <th>Volunteer ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Street Address</th>
-                <th>City</th>
-                <th>State</th>
-                <th>Zip Code</th>
-                <th>Phone Number</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
+        <tr>
+            <th>Volunteer ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Street Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zip Code</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>
         </thead>
         <tbody>
-            {% for volunteer in volunteers %}
-            <tr>
-                <form method="POST" action="{% url 'foodbank:volunteers' %}">
-                    {% csrf_token %}
-                    <td>{{ volunteer.id }}</td>
-                    <td><input type="text" name="first_name" value="{{ volunteer.first_name }}"></td>
-                    <td><input type="text" name="last_name" value="{{ volunteer.last_name }}"></td>
-                    <td><input type="text" name="street_address" value="{{ volunteer.street_address }}"></td>
-                    <td><input type="text" name="city" value="{{ volunteer.city }}"></td>
-                    <td><input type="text" name="home_state" value="{{ volunteer.home_state }}"></td>
-                    <td><input type="text" name="zip_code" value="{{ volunteer.zip_code }}"></td>
-                    <td><input type="text" name="phone_number" value="{{ volunteer.phone_number }}"></td>
-                    <td><input type="text" name="email" value="{{ volunteer.email }}"></td>
-                    <td>
-                        <!-- Button to edit entity -->
-                        <button type="submit" name="edit">Save Edits</button>
-                        <!-- Button to delete entity -->
-                        <button type="submit" name="delete">Delete</button>
-                    </td>
-                </form>
-            </tr>
-            {% endfor %}
+        {% for volunteer in volunteers %}
+        <tr>
+            <form method="POST" action="{% url 'foodbank:volunteers' %}">
+                {% csrf_token %}
+                <td><input type="text" name="volunteer_id" value="{{ volunteer.id }}"></td>
+                <td><input type="text" name="first_name" value="{{ volunteer.first_name }}"></td>
+                <td><input type="text" name="last_name" value="{{ volunteer.last_name }}"></td>
+                <td><input type="text" name="street_address" value="{{ volunteer.street_address }}"></td>
+                <td><input type="text" name="city" value="{{ volunteer.city }}"></td>
+                <td><input type="text" name="home_state" value="{{ volunteer.home_state }}"></td>
+                <td><input type="text" name="zip_code" value="{{ volunteer.zip_code }}"></td>
+                <td><input type="text" name="phone_number" value="{{ volunteer.phone_number }}"></td>
+                <td><input type="text" name="email" value="{{ volunteer.email }}"></td>
+                <td>
+                    <!-- Button to edit entity -->
+                    <button type="submit" name="edit">Save Edits</button>
+                    <!-- Button to delete entity -->
+                    <button type="submit" name="delete">Delete</button>
+                </td>
+            </form>
+        </tr>
+        {% endfor %}
         </tbody>
     </table>
+</div>
 
-    <!-- Data summary tables -->
+<!-- Data summary tables -->
+<div class="data-summary">
     <h2>Data Summary</h2>
-
-    <table border="1">
+    <table>
         <thead>
-            <tr>
-                <th>City</th>
-                <th>Number of Volunteers</th>
-            </tr>
+        <tr>
+            <th>City</th>
+            <th>Number of Volunteers</th>
+        </tr>
         </thead>
         <tbody>
-            {% for row in vol_count_by_city %}
-            <tr>
-                <td>{{row.city}}</td>
-                <td>{{row.NumVolunteers}}</td>
-            </tr>
-            {% endfor %}
+        {% for row in vol_count_by_city %}
+        <tr>
+            <td>{{ row.city }}</td>
+            <td>{{ row.NumVolunteers }}</td>
+        </tr>
+        {% endfor %}
         </tbody>
     </table>
+</div>
 
-    <!-- Form to create new entity -->
+<!-- Form to create new entity -->
+<div class="add-volunteer">
     <h2>Add Volunteer</h2>
     <form method="POST" action="{% url 'foodbank:volunteers' %}">
         {% csrf_token %}
         <label for="first_name">First Name:</label>
-        <input type="text" id="first_name" name="first_name"><br>
+        <input type="text" id="first_name" name="first_name">
         <label for="last_name">Last Name:</label>
-        <input type="text" id="last_name" name="last_name"><br>
+        <input type="text" id="last_name" name="last_name">
         <label for="street_address">Street Address:</label>
-        <input type="text" id="street_address" name="street_address"><br>
+        <input type="text" id="street_address" name="street_address">
         <label for="city">City:</label>
-        <input type="text" id="city" name="city"><br>
+        <input type="text" id="city" name="city">
         <label for="home_state">State:</label>
-        <input type="text" id="home_state" name="home_state"><br>
+        <input type="text" id="home_state" name="home_state">
         <label for="zip_code">Zip Code:</label>
-        <input type="text" id="zip_code" name="zip_code"><br>
+        <input type="text" id="zip_code" name="zip_code">
         <label for="phone_number">Phone Number:</label>
-        <input type="text" id="phone_number" name="phone_number"><br>
+        <input type="text" id="phone_number" name="phone_number">
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email"><br>
-        <!-- Add other fields for new volunteer here -->
+        <input type="email" id="email" name="email">
         <button type="submit" name="add">Add Volunteer</button>
     </form>
+</div>
 
+<div class="main-page">
     <h2>Return to Main Page</h2>
-    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
-
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: inherit;">Main Page</a></button>
+</div>
 </body>
 </html>
