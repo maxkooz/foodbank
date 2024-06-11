@@ -132,7 +132,7 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         email = request.POST.get('email')
 
         # Check that at least one field is not empty
-        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email]):            
+        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email], []):            
             if 'add' in request.POST:
             
                 Volunteer.objects.create(
