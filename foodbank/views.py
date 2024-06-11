@@ -122,6 +122,8 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         return render(req, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
+        error_msgs = []
+
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         street_address = request.POST.get('street_address')
@@ -132,7 +134,7 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         email = request.POST.get('email')
 
         # Check that at least one field is not empty
-        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email], []):            
+        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email], error_msgs):            
             if 'add' in request.POST:
             
                 Volunteer.objects.create(
@@ -168,8 +170,7 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
                     return redirect(reverse("foodbank:volunteers")+'?error_msg='+error_msg)
 
         else:
-            error_msg = "All fields are required to create volunteer object"
-            return redirect(reverse("foodbank:volunteers")+'?error_msg='+error_msg)
+            return redirect(reverse("foodbank:volunteers")+'?error_msg='+'\r\n'.join(error_msgs))
 
 
 
@@ -216,6 +217,8 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
         return render(req, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
+        error_msgs = []
+
         street_address = request.POST.get('street_address')
         city = request.POST.get('city')
         home_state = request.POST.get('home_state')
@@ -224,7 +227,7 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
         phone_number = request.POST.get('phone_number')
         email = request.POST.get('email')
 
-        if validateTextFields([street_address, city, home_state, zip_code, phone_number, email]) and self.validateForeignKey(manager):
+        if validateTextFields([street_address, city, home_state, zip_code, phone_number, email], error_msgs) and self.validateForeignKey(manager, error_msgs):
             if 'add' in request.POST:
                 FoodBank.objects.create(
                     street_address=street_address,
@@ -261,12 +264,13 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
             
             return redirect(reverse('foodbank:foodbanks'))
         else:
-            error_msg = 'All fields are required to create object'
-            return redirect(reverse("foodbank:foodbanks")+'?error_msg='+error_msg)
+            return redirect(reverse("foodbank:foodbanks")+'?error_msg='+'\r\n'.join(error_msgs))
     
-    def validateForeignKey(self, fk):
+    def validateForeignKey(self, fk, error_msgs):
         if Volunteer.objects.filter(pk=fk).exists():
             return True
+        
+        error_msgs.append('Foreign key value must correspond to an entity that exists within foreign table')
         return False
 
 def validateTextFields(fields, error_msgs):
@@ -418,7 +422,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             
             return redirect(reverse('foodbank:'+self.context_object_name))
         else:
-            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
+            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+'\r\n'.join(error_msgs))
     
     def validateForeignKey(self, fks, error_msgs):
         if self.foreign_model.objects.filter(pk=fks[0]).exists():
@@ -566,7 +570,7 @@ class VehcileView(LoginRequiredMixin, generic.ListView):
             
             return redirect(reverse('foodbank:'+self.context_object_name))
         else:
-            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
+            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+'\r\n'.join(error_msgs))
     
     def validateForeignKey(self, fks, error_msgs):
         if self.foreign_model.objects.filter(pk=fks[0]).exists():
@@ -679,7 +683,7 @@ class TransitView(LoginRequiredMixin, generic.ListView):
             
             return redirect(reverse('foodbank:'+self.context_object_name))
         else:
-            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+[e +'\r\n' for e in error_msgs])
+            return redirect(reverse("foodbank:"+self.context_object_name)+'?error_msg='+'\r\n'.join(error_msgs))
     
     def validateForeignKey(self, fks, error_msgs):
         if self.foreign_model.objects.filter(pk=fks[0]).exists():
