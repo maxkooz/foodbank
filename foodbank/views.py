@@ -214,64 +214,68 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
         }
 
         return render(req, self.template_name, context)
-
+    
     def post(self, request, *args, **kwargs):
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
         street_address = request.POST.get('street_address')
         city = request.POST.get('city')
         home_state = request.POST.get('home_state')
         zip_code = request.POST.get('zip_code')
+        manager = request.POST.get('manager')
         phone_number = request.POST.get('phone_number')
         email = request.POST.get('email')
 
-        # Check that at least one field is not empty
-        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email]):
+        if validateTextFields([street_address, city, home_state, zip_code, phone_number, email]) and self.validateForeignKey(manager):
             if 'add' in request.POST:
-                Volunteer.objects.create(
-                    first_name=first_name,
-                    last_name=last_name,
+                FoodBank.objects.create(
                     street_address=street_address,
                     city=city,
                     home_state=home_state,
                     zip_code=zip_code,
+                    manager=Volunteer.objects.get(pk=manager),
                     phone_number=phone_number,
                     email=email
                 )
             elif 'edit' in request.POST:
-                volunteer_id = request.POST.get('volunteer_id')
-                volunteer = Volunteer.objects.get(id=volunteer_id)
+                foodbank_id = request.POST.get('foodbank_id')
+                foodbank = FoodBank.objects.get(id=foodbank_id)
 
-                for field in Volunteer._meta.get_fields():
+                for field in FoodBank._meta.get_fields():
                     name = field.name
                     if name != 'id' and name in request.POST and request.POST.get(name) != "":
                         newval = request.POST.get(name)
-                        print(name, newval)
-                        volunteer.__setattr__(name, newval)
+                        if name == 'manager':
+                            newval = Volunteer.objects.get(id=newval)
+                        
+                        foodbank.__setattr__(name, newval)
 
-                volunteer.save()
+                # Update other fields for editing
+                foodbank.save()
             elif 'delete' in request.POST:
-                volunteer_id = request.POST.get('volunteer_id')
+                foodbank_id = request.POST.get('foodbank_id')
 
                 try:
-                    Volunteer.objects.get(id=volunteer_id).delete()
-                except Volunteer.DoesNotExist:
-                    error_msg = 'Error when deleting Volunteer ' + str(volunteer_id) + ': volunteer does not exist'
-                    return redirect(reverse("foodbank:volunteers") + '?error_msg=' + error_msg)
+                    FoodBank.objects.get(id=foodbank_id).delete()
+                except FoodBank.DoesNotExist:
+                    error_msg = 'Error when deleting Food Bank ' + str(foodbank_id) + ': food bank does not exist'
+                    return redirect(reverse("foodbank:foodbanks")+'?error_msg='+error_msg)
+            
+            return redirect(reverse('foodbank:foodbanks'))
         else:
-            error_msg = "All fields are required to create volunteer object"
-            return redirect(reverse("foodbank:volunteers") + '?error_msg=' + error_msg)
-
-        return redirect(reverse("foodbank:volunteers"))
+            error_msg = 'All fields are required to create object'
+            return redirect(reverse("foodbank:foodbanks")+'?error_msg='+error_msg)
     
     def validateForeignKey(self, fk):
         if Volunteer.objects.filter(pk=fk).exists():
             return True
         return False
 
-def validateTextFields(fields, error_msgs=None):
-    return all(field.strip() for field in fields)
-
+def validateTextFields(fields, error_msgs):
+    for field in fields:
+        if field == "":
+            error_msgs.append('No text fields can be empty')
+            return False
+        
+    return True
 
 def validateIntFields(fields, error_msgs):
     for field in fields:
