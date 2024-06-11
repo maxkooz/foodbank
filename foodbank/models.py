@@ -67,7 +67,7 @@ class FoodItem(models.Model):
     expiration_date = models.DateField()
     item_size = models.CharField(max_length=255)
     associated_food_bank = models.ForeignKey(FoodBank, on_delete=models.CASCADE, null=True, blank=True)
-    donator = models.ForeignKey(Donator, on_delete=models.CASCADE)
+    donator = models.ForeignKey(Donator, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class DistributedFoodItem(models.Model):

@@ -15,6 +15,7 @@
                 <th>Last Name</th>
                 <th>Phone Number</th>
                 <th>Email</th>
+                <th>Food Items Donated</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -28,6 +29,14 @@
                     <td><input type="text" name="last_name" value="{{ donator.last_name }}"></td>
                     <td><input type="text" name="phone_number" value="{{ donator.phone_number }}"></td>
                     <td><input type="text" name="email" value="{{ donator.email }}"></td>
+                    <td>
+                        <!-- Displaying donated food items -->
+                        <ul>
+                            {% for fooditem in donator.fooditem_set.all %}
+                            <li>{{ fooditem.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
                     <td>
                         <button type="submit" name="save">Save</button>
                         <button type="submit" formaction="{% url 'foodbank:donator_delete' %}" name="delete">Delete</button>
@@ -55,5 +64,4 @@
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
 
 </body>
-
 </html>

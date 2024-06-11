@@ -941,7 +941,7 @@ def distributed_food_item_delete(request):
 
 @login_required(login_url='/login/')
 def donator_view(request):
-    donators = Donator.objects.all()
+    donators = Donator.objects.all().prefetch_related('fooditem_set')
 
     if request.method == 'POST':
         donator_id = request.POST.get('donator_id')
@@ -971,8 +971,6 @@ def donator_view(request):
         'donators': donators,
     }
     return render(request, 'donator.html', context)
-
-@login_required(login_url='/login/')
 def donator_delete(request):
     if request.method == 'POST':
         donator_id = request.POST.get('donator_id')
