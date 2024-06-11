@@ -62,21 +62,21 @@
             color: white;
             border: none;
         }
-        
-        a:link { 
-           text-decoration: none; 
+
+        a:link {
+           text-decoration: none;
            color: darkorange;
-        } 
-        a:visited { 
-            text-decoration: none; 
+        }
+        a:visited {
+            text-decoration: none;
             color: darkorange;
-        } 
-        a:hover { 
-            text-decoration: none; 
+        }
+        a:hover {
+            text-decoration: none;
             color: darkorange;
-        } 
-        a:active { 
-            text-decoration: none; 
+        }
+        a:active {
+            text-decoration: none;
             color: darkorange;
         }
     </style>
@@ -85,20 +85,9 @@
     <div class="header">Foodbank Management System</div>
     <div class="subheader">Welcome to the Foodbank Main Page</div>
     <div class="button-container">
-        <button onclick="location.href='{% url 'foodbank:volunteers' %}'">Volunteer</button>
-        <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
-        <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
         <button onclick="location.href='{% url 'foodbank:volunteer_tasks' %}'">Individual Shifts</button>
-        <button onclick="location.href='{% url 'foodbank:tasks' %}'">Tasks</button>
-        <button onclick="location.href='{% url 'foodbank:foodbanks' %}'">Food Banks</button>
-        <button onclick="location.href='{% url 'foodbank:fooditems' %}'">Food Items</button>
-        <button onclick="location.href='{% url 'foodbank:foodgroups' %}'">Food Groups</button>
-        <button onclick="location.href='{% url 'foodbank:donators' %}'">Donators</button>
-        <button onclick="location.href='{% url 'foodbank:distributed_food_items' %}'">Distributed Food Items</button>
-        <button onclick="location.href='{% url 'foodbank:recipient_organizations' %}'">Recipient Organizations</button>
+        <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
         <button class="logout-button" onclick="location.href='{% url 'foodbank:logout' %}'">Logout</button>
     </div>
-
-
 </body>
 </html>

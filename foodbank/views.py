@@ -15,6 +15,18 @@ import re
 from datetime import datetime, timedelta
 from collections import namedtuple
 
+def admin_login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
+            login(request, user)
+            return redirect('foodbank:main_page')
+        else:
+            error_msg = 'Invalid credentials. Please try again.'
+            return render(request, 'admin_login.html', {'error_msg': error_msg})
+    return render(request, 'admin_login.html')
 def home_view(request):
     error_msg = request.GET.get('error_msg')
 
@@ -32,14 +44,14 @@ def login_view(request):
     if user is not None:
         login(request, user)
 
-        return redirect(reverse('foodbank:main_page'))
+        return redirect(reverse('foodbank:limited_main_page'))
     else:
         error_msg = 'Login Failed. Please enter username and password or create new account.'
         return redirect(reverse('foodbank:home')+'?error_msg='+error_msg)
     
 def logout_view(request):
     logout(request)
-    return redirect(reverse('foodbank:main_page'))
+    return redirect(reverse('foodbank:limited_main_page'))
 
 def sign_up_view(request):
     username = request.POST.get("username")
@@ -55,9 +67,16 @@ def sign_up_view(request):
 
     login(request, user)
 
-    return redirect(reverse('foodbank:main_page'))
+    return redirect(reverse('foodbank:limited_main_page'))
 
 @login_required(login_url='/login/')
+def limited_main_page_view(request):
+    if not request.user.is_authenticated:
+        return redirect(reverse('foodbank:home'))
+
+    return render(request, 'limited_main_page.html')
+
+
 def main_page_view(request):
     if not request.user.is_authenticated:
         return redirect(reverse('foodbank:home'))

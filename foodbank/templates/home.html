@@ -82,9 +82,9 @@
         <form method="post" action="{% url 'foodbank:login' %}">
             {% csrf_token %}
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username">
+            <input type="text" id="user" name="username">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password">
+            <input type="password" id="pass" name="password">
             <button type="submit">Login</button>
         </form>
     </div>
@@ -106,6 +106,14 @@
             <button type="submit">Sign Up</button>
         </form>
     </div>
+
+    <div class="form-box">
+    <h2>Admin Login</h2>
+    <form method="get" action="{% url 'foodbank:admin_login' %}">
+        <button type="submit">Admin Login</button>
+    </form>
+</div>
+
 </div>
 </body>
 </html>
