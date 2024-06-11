@@ -93,7 +93,7 @@
 <!-- Search entities -->
 <div class="form-container">
     <form method="GET" action="{% url 'foodbank:volunteers' %}">
-        <input type="text" name="q" placeholder="Search by first name" value="{{ query }}">
+        <input type="text" name="q" placeholder="Search by first name:" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
 </div>
