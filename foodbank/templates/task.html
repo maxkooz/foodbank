@@ -105,6 +105,7 @@
                     <td><input type="number" name="min_volunteers" value="{{ task.min_volunteers }}"></td>
                     <td><input type="number" name="max_volunteers" value="{{ task.max_volunteers }}"></td>
                     <td>
+                        <input type="hidden" name="task_id" value="{{task.id}}">
                         <button type="submit" name="edit">Save Edits</button>
                         <button type="submit" name="delete">Delete</button>
                     </td>
