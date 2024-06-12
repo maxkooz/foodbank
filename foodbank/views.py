@@ -936,18 +936,50 @@ dbSetupComplete = False
 def setup_database(request):
     # insert volunteer entities
     vol_query = "INSERT INTO foodbank_volunteer (first_name, last_name, street_address, city, home_state, zip_code, phone_number, email) VALUES ('John', 'Doe', '123 Main St.', 'Charlottesville', 'VA', '22903', '123-456-7890', 'johndoe@gmail.com'), ('Jane', 'Smith', '456 Elm St.', 'Richmond', 'VA', '23220', '234-567-8901', 'janesmith@gmail.com'), ('Michael', 'Johnson', '789 Oak St.', 'Norfolk', 'VA', '23510', '345-678-9012', 'michaeljohnson@gmail.com'), ('Emily', 'Davis', '101 Pine St.', 'Alexandria', 'VA', '22301', '456-789-0123', 'emilydavis@gmail.com'), ('David', 'Wilson', '202 Maple St.', 'Roanoke', 'VA', '24011', '567-890-1234', 'davidwilson@gmail.com'), ('Sophia', 'Martinez', '303 Birch St.', 'Arlington', 'VA', '22201', '678-901-2345', 'sophiamartinez@gmail.com'), ('Daniel', 'Brown', '404 Cedar St.', 'Hampton', 'VA', '23669', '789-012-3456', 'danielbrown@gmail.com');"
-    execute_raw_sql(vol_query, fetch=False)
+    _ = execute_raw_sql(vol_query, fetch=False)
 
     # insert foodbank entities
     fb_query = "INSERT INTO foodbank_foodbank (street_address, city, home_state, zip_code, manager_id, phone_number, email) VALUES ('123 Main St', 'Charlottesville', 'VA', '22903', 1, '555-1234', 'foodbank1@gmail.com'), ('456 Elm St', 'Richmond', 'VA', '23220', 2, '555-2345', 'foodbank2@gmail.com'), ('789 Oak St', 'Norfolk', 'VA', '23510', 3, '555-3456', 'foodbank3@gmail.com'), ('101 Pine St', 'Alexandria', 'VA', '22301', 4, '555-4567', 'foodbank4@gmail.com'), ('202 Maple St', 'Roanoke', 'VA', '24011', 5, '555-5678', 'foodbank5@gmail.com'), ('303 Birch St', 'Arlington', 'VA', '22201', 6, '555-6789', 'foodbank6@gmail.com'), ('404 Cedar St', 'Hampton', 'VA', '23669', 7, '555-7890', 'foodbank7@gmail.com');"
-    execute_raw_sql(fb_query, fetch=False)
+    _ = execute_raw_sql(fb_query, fetch=False)
 
     # insert vehicle entities
-    veh_query = "INSERT INTO foodbank_vehicle (driver_volunteer_id, vehcile_type, total_passenger_capacity) VALUES (1, 'Honda', 5), (2, 'Toyota', 7), (3, 'Ford', 4), (4, 'Chevrolet', 6), (5, 'Nissan', 8), (6, 'Dodge', 3), (7, 'Subaru', 5);"
-    execute_raw_sql(veh_query, fetch=False)
+    tmp = execute_raw_sql("PRAGMA table_info(foodbank_vehicle)")
+    print(tmp)
+    veh_query = "INSERT INTO foodbank_vehicle (driver_volunteer_id, vehicle_type, total_passenger_capacity) VALUES (1, 'Honda', 5), (2, 'Toyota', 7), (3, 'Ford', 4), (4, 'Chevrolet', 6), (5, 'Nissan', 8), (6, 'Dodge', 3), (7, 'Subaru', 5);"
+    _ = execute_raw_sql(veh_query, fetch=False)
 
-    # insert more...
+    # insert transit schedules
+    ts_query = "INSERT INTO foodbank_transitschedule (vehicle_id, arrival_date_time, departure_date_time, current_available_capacity) VALUES (1, '2024-05-30 08:00:00', '2024-05-30 12:00:00', 3), (2, '2024-05-30 08:00:00', '2024-05-30 12:00:00', 5), (3, '2024-06-01 09:00:00', '2024-06-01 13:00:00', 7), (4, '2024-06-01 09:00:00', '2024-06-01 13:00:00', 9), (5, '2024-06-02 10:00:00', '2024-06-02 14:00:00', 11), (6, '2024-06-02 10:00:00', '2024-06-02 14:00:00', 13), (7, '2024-06-02 10:00:00', '2024-06-02 14:00:00', 15);"
+    _ = execute_raw_sql(ts_query, fetch=False)
 
+    # insert task entities
+    task_query = "INSERT INTO foodbank_task (description, start_date_time, end_date_time, associated_food_bank_id, min_volunteers, max_volunteers) VALUES ('Help distribute food', '2024-05-30 08:00:00', '2024-05-30 12:00:00', 1, 3, 20), ('Organize inventory', '2024-06-01 09:00:00', '2024-06-01 13:00:00', 2, 4, 25), ('Prepare meal packages', '2024-06-02 10:00:00', '2024-06-02 14:00:00', 3, 5, 30), ('Transport food to shelters', '2024-06-03 11:00:00', '2024-06-03 15:00:00', 1, 2, 15), ('Assist with fundraising event', '2024-06-04 12:00:00', '2024-06-04 16:00:00', 2, 6, 35), ('Provide administrative support', '2024-06-05 13:00:00', '2024-06-05 17:00:00', 3, 3, 20), ('Clean and sanitize facility', '2024-06-06 14:00:00', '2024-06-06 18:00:00', 1, 4, 25);"
+    _ = execute_raw_sql(task_query, fetch=False)
+
+    # insert volunteer_task entities
+    vt_query = "INSERT INTO foodbank_volunteer_task (volunteer_id, task_id) VALUES (1, 1), (2, 1), (3, 1), (2, 2), (2, 3), (1, 3), (4, 4);"
+    _ = execute_raw_sql(vt_query, fetch=False)
+
+    # insert food group entities
+    fg_query = "INSERT INTO foodbank_foodgroup (name) VALUES ('Fruit'), ('Vegetable'), ('Dairy'), ('Grain'), ('Protein'), ('Other');"
+    _ = execute_raw_sql(fg_query, fetch=False)
+
+    # insert donator entities
+    don_query = "INSERT INTO foodbank_donator (first_name, last_name, phone_number, email) VALUES ('John', 'Doe', '555-1234', 'john.doe@email.com'), ('Jane', 'Smith', '555-2345', 'jane.smith@email.com'), ('Alice', 'Johnson', '555-3456', 'alice.johnson@email.com'), ('Bob', 'Williams', '555-4567', 'bob.williams@email.com'), ('Eve', 'Brown', '555-5678', 'eve.brown@email.com'), ('Michael', 'Davis', '555-6789', 'michael.davis@email.com'), ('Sarah', 'Miller', '555-7890', 'sarah.miller@email.com');"
+    _ = execute_raw_sql(don_query, fetch=False)
+
+    # insert food item entities
+    fi_query = "INSERT INTO foodbank_fooditem (name, food_group_id, expiration_date, item_size, associated_food_bank_id, donator_id) VALUES ('Apple', 1, '2024-06-10', '1 unit', 1, 1), ('Banana', 1, '2024-06-12', '4 units', 2, 2), ('Carrot', 2, '2024-06-15', '12 oz', 2, 2), ('Milk', 3, '2024-06-18', '1 G', 1, 3), ('Bread', 4, '2024-06-20', '1.5 lbs', 2, 1), ('Chicken', 5, '2024-06-25', '1 lb', 3, 3), ('Rice', 4, '2024-06-30', '5 lbs', 1, 4);"
+    _ = execute_raw_sql(fi_query, fetch=False)
+
+    # insert recipient organization entities
+    ro_query = "INSERT INTO foodbank_recipientorganization (name, street_address, city, home_state, zip_code, phone_number, email) VALUES ('FEAST', '111 Elmo St', 'Alexandria', 'VA', '22206', '904-1111', 'hello@gmail.com'), ('Second Harvest', '123 Main St', 'Charlottesville', 'VA', '22903', '555-1234', 'secondharvest@email.com'), ('Food Bank of Virginia', '456 Elm St', 'Richmond', 'VA', '23220', '555-2345', 'foodbankva@email.com'), ('Helping Hands', '789 Oak St', 'Norfolk', 'VA', '23508', '555-3456', 'helpinghands@email.com'), ('Community Food Pantry', '101 Pine St', 'Arlington', 'VA', '22201', '555-4567', 'communitypantry@email.com'), ('Neighborly Food Rescue', '202 Maple St', 'Roanoke', 'VA', '24012', '555-5678', 'neighborlyfood@email.com'), ('Hope Food Ministry', '303 Birch St', 'Hampton', 'VA', '23666', '555-6789', 'hopefood@email.com');"
+    _ = execute_raw_sql(ro_query, fetch=False)
+
+    # insert distributed food item entities
+    dfi_query = "INSERT INTO foodbank_distributedfooditem (food_item_id, recipient_org_id) VALUES (1, 1), (2, 1), (3, 2), (4, 2), (5, 3), (6, 3), (7, 4);"
+    _ = execute_raw_sql(dfi_query, fetch=False)
+    
 
     global dbSetupComplete
     dbSetupComplete = True
