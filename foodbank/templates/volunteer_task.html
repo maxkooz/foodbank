@@ -60,7 +60,9 @@
                 <th>Task</th>
                 <th>Food Bank City</th>
                 <th>Task Time</th>
+                {% if user.is_staff %}
                 <th>Action</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -69,26 +71,16 @@
                 <form method="POST">
                     {% csrf_token %}
                     <input type="hidden" name="shift_id" value="{{ shift.id }}">
-                    <td>
-                        <select name="volunteer">
-                            {% for volunteer in volunteers %}
-                            <option value="{{ volunteer.id }}" {% if shift.volunteer_id == volunteer.id %}selected{% endif %}>{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <select name="task">
-                            {% for task in tasks %}
-                            <option value="{{ task.id }}" {% if shift.task_id == task.id %}selected{% endif %}>{{ task.description }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
+                    <td>{{ shift.volunteer.first_name }} {{ shift.volunteer.last_name }}</td>
+                    <td>{{ shift.task.description }}</td>
                     <td>{{ shift.task.associated_food_bank.city }}</td>
                     <td>{{ shift.task.start_date_time|date:"F d, Y H:i" }} - {{ shift.task.end_date_time|date:"H:i" }}</td>
+                    {% if user.is_staff %}
                     <td>
                         <button type="submit" name="save">Save</button>
                         <button type="submit" formaction="{% url 'foodbank:volunteer_task_delete' %}" name="delete">Delete</button>
                     </td>
+                    {% endif %}
                 </form>
             </tr>
             {% endfor %}
@@ -108,7 +100,7 @@
     <label for="task">Task:</label>
     <select id="task" name="task">
         {% for task in tasks %}
-        <option value="{{ task.id }}">{{ task.description }}</option>
+        <option value="{{ task.id }}">{{ task.description }} - {{ task.start_date_time|date:"F d, Y H:i" }} - {{ task.end_date_time|date:"H:i" }}</option>
         {% endfor %}
     </select><br>
     <button type="submit" name="add">Add Volunteer Task</button>
