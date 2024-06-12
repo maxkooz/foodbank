@@ -26,4 +26,5 @@ urlpatterns = [
     path('donators/delete/', views.donator_delete, name='donator_delete'),
     path('foodgroups/', views.foodgroup_view, name='foodgroups'),
     path('foodgroups/delete/', views.foodgroup_delete, name='foodgroup_delete'),
+    path('setup_db/', views.setup_database, name='setup_db')
 ]

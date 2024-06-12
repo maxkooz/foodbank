@@ -57,6 +57,12 @@
             font-weight: bold;
             border: none;
         }
+        .button-container .db-setup-button {
+            background-color: darkorange;
+            color: #FFDBBB;
+            font-weight: bold;
+            border: none;
+        }
         .button-container .logout-button:hover {
             background-color: #0056b3;
             color: white;
@@ -84,6 +90,7 @@
 <body>
     <div class="header">Foodbank Management System</div>
     <div class="subheader">Welcome to the Foodbank Main Page</div>
+    {% if msg %} <div class="subheader" style="color: green;">{{ msg }}</div> {% endif %}
     <div class="button-container">
         <button onclick="location.href='{% url 'foodbank:volunteers' %}'">Volunteer</button>
         <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
@@ -97,8 +104,19 @@
         <button onclick="location.href='{% url 'foodbank:distributed_food_items' %}'">Distributed Food Items</button>
         <button onclick="location.href='{% url 'foodbank:recipient_organizations' %}'">Recipient Organizations</button>
         <button class="logout-button" onclick="location.href='{% url 'foodbank:logout' %}'">Logout</button>
+        {% if dbSetupComplete == False %}<button class="db-setup-button" onclick="clicked(event)">Setup DB</button> {% endif %}
     </div>
 
 
 </body>
+<script>
+    function clicked(e)
+    {
+        if(!confirm('This will fill the DB with sample entities. Only do this once, even amongst users and sessions! This is for testing purposes only. Select OK to continue.')) {
+            e.preventDefault();
+        } else {
+            window.location.href = {% url 'foodbank:setup_db' %};
+        }
+    }
+</script>
 </html>

@@ -62,7 +62,9 @@ def main_page_view(request):
     if not request.user.is_authenticated:
         return redirect(reverse('foodbank:home'))
 
-    return render(request, 'main_page.html')
+    msg = request.GET.get('msg')
+    global dbSetupComplete
+    return render(request, 'main_page.html', {'msg': msg, 'dbSetupComplete': dbSetupComplete})
 
 # from Django documentation
 def namedtuplefetchall(cursor):
@@ -80,6 +82,13 @@ def execute_raw_sql(query, fetch=True):
         res = namedtuplefetchall(cursor) if fetch else None
     
     return res
+
+def execute_many_raw_sql(queries):
+    with connection.cursor() as cursor:
+        for query in queries:
+            cursor.execute(query)
+    
+    return
 
 class VolunteerView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"
@@ -922,3 +931,25 @@ def foodgroup_delete(request):
         foodgroup = get_object_or_404(FoodGroup, id=foodgroup_id)
         foodgroup.delete()
     return redirect(reverse('foodbank:foodgroups'))
+
+dbSetupComplete = False
+def setup_database(request):
+    # insert volunteer entities
+    vol_query = "INSERT INTO foodbank_volunteer (first_name, last_name, street_address, city, home_state, zip_code, phone_number, email) VALUES ('John', 'Doe', '123 Main St.', 'Charlottesville', 'VA', '22903', '123-456-7890', 'johndoe@gmail.com'), ('Jane', 'Smith', '456 Elm St.', 'Richmond', 'VA', '23220', '234-567-8901', 'janesmith@gmail.com'), ('Michael', 'Johnson', '789 Oak St.', 'Norfolk', 'VA', '23510', '345-678-9012', 'michaeljohnson@gmail.com'), ('Emily', 'Davis', '101 Pine St.', 'Alexandria', 'VA', '22301', '456-789-0123', 'emilydavis@gmail.com'), ('David', 'Wilson', '202 Maple St.', 'Roanoke', 'VA', '24011', '567-890-1234', 'davidwilson@gmail.com'), ('Sophia', 'Martinez', '303 Birch St.', 'Arlington', 'VA', '22201', '678-901-2345', 'sophiamartinez@gmail.com'), ('Daniel', 'Brown', '404 Cedar St.', 'Hampton', 'VA', '23669', '789-012-3456', 'danielbrown@gmail.com');"
+    execute_raw_sql(vol_query, fetch=False)
+
+    # insert foodbank entities
+    fb_query = "INSERT INTO foodbank_foodbank (street_address, city, home_state, zip_code, manager_id, phone_number, email) VALUES ('123 Main St', 'Charlottesville', 'VA', '22903', 1, '555-1234', 'foodbank1@gmail.com'), ('456 Elm St', 'Richmond', 'VA', '23220', 2, '555-2345', 'foodbank2@gmail.com'), ('789 Oak St', 'Norfolk', 'VA', '23510', 3, '555-3456', 'foodbank3@gmail.com'), ('101 Pine St', 'Alexandria', 'VA', '22301', 4, '555-4567', 'foodbank4@gmail.com'), ('202 Maple St', 'Roanoke', 'VA', '24011', 5, '555-5678', 'foodbank5@gmail.com'), ('303 Birch St', 'Arlington', 'VA', '22201', 6, '555-6789', 'foodbank6@gmail.com'), ('404 Cedar St', 'Hampton', 'VA', '23669', 7, '555-7890', 'foodbank7@gmail.com');"
+    execute_raw_sql(fb_query, fetch=False)
+
+    # insert vehicle entities
+    veh_query = "INSERT INTO foodbank_vehicle (driver_volunteer_id, vehcile_type, total_passenger_capacity) VALUES (1, 'Honda', 5), (2, 'Toyota', 7), (3, 'Ford', 4), (4, 'Chevrolet', 6), (5, 'Nissan', 8), (6, 'Dodge', 3), (7, 'Subaru', 5);"
+    execute_raw_sql(veh_query, fetch=False)
+
+    # insert more...
+
+
+    global dbSetupComplete
+    dbSetupComplete = True
+    msg = 'Database setup complete!'
+    return redirect(reverse('foodbank:main_page')+'?msg='+msg)
