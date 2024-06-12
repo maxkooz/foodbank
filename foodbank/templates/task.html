@@ -73,6 +73,7 @@
 
     <!-- All task entities -->
     <h2>All Tasks</h2>
+    {% if user.is_staff %}
     <table border="1">
         <thead>
             <tr>
@@ -114,6 +115,42 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% else %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Task ID</th>
+                <th>Associated Food Bank</th>
+                <th>Description</th>
+                <th>Start Date Time</th>
+                <th>End Date Time</th>
+                <th>Min Volunteers</th>
+                <th>Max Volunteers</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>
+                    {% for foodbank in foodbanks %}
+                        {% if foodbank.id == task.associated_food_bank_id %}{{ foodbank.street_address }}, {{foodbank.city}}, {{foodbank.home_state}} {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.start_date_time|date:'Y-m-d H:i' }}</td>
+                <td>{{ task.end_date_time|date:'Y-m-d H:i' }}</td>
+                <td>{{ task.min_volunteers }}</td>
+                <td>{{ task.max_volunteers }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+
+    {% if user.is_staff %}
     <h2>Add Task</h2>
     <form method="POST">
         {% csrf_token %}
@@ -135,6 +172,8 @@
         <input type="number" id="max_volunteers" name="max_volunteers"><br>
         <button type="submit" name="add">Add Task</button>
     </form>
+
+    {% endif %}
 
     <h2>Return to Main Page</h2>
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>

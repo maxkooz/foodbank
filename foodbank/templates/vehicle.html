@@ -13,6 +13,7 @@
     <p style="color:red;">{{error_msg}}</p>
     {% endif %}
 
+    <h2>All Vehicles</h2>
     <form method="GET">
         <label for="q">Search:</label>
         <input type="text" id="q" name="q" value="{{ query }}">
@@ -20,6 +21,8 @@
     </form>
 
     <!-- All vehicle entities -->
+
+     {%if user.is_staff%}
     <table border="1">
         <thead>
             <tr>
@@ -54,6 +57,30 @@
             {% endfor %}
         </tbody>
     </table>
+    {%else%}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Driver</th>
+                <th>Vehicle Type</th>
+                <th>Total Passenger Capacity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehicle in vehicles %}
+            <tr>
+                    <td>
+                        {% for volunteer in volunteers %}
+                            {% if vehicle.driver_volunteer_id == volunteer.id %} {{ volunteer.first_name }} {{ volunteer.last_name }} {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>{{ vehicle.vehicle_type }}</td>
+                    <td>{{ vehicle.total_passenger_capacity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {%endif%}
 
     <!-- Data Summary -->
     <h2>Data Summary</h2>
@@ -78,6 +105,8 @@
         </tbody>
     </table>
 
+
+    {% if user.is_staff %}
     <!-- Add vehicle entity -->
     <h2>Add Vehicle</h2>
     <form method="POST">
@@ -95,6 +124,7 @@
         <input type="number" id="total_passenger_capacity" name="total_passenger_capacity"><br>
         <button type="submit" name="add">Add Vehicle</button>
     </form>
+    {%endif%}
 
     <h2>Return to Main Page</h2>
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>

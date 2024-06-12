@@ -255,6 +255,7 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
             'food_bank_count_by_city': res,
             'potential_managers': potential_managers,
             'error_msg': error_msg,
+            'user': req.user,
         }
 
         return render(req, self.template_name, context)
@@ -401,6 +402,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             'volunteers': Volunteer.objects.all(),
             'query': query,
             'error_msg': error_msg,
+            'user': req.user,
         }
 
         return render(req, self.template_name, context)
@@ -523,7 +525,7 @@ def volunteer_task_delete(request):
         shift.delete()
     return redirect(reverse('foodbank:volunteer_tasks'))
 
-class VehcileView(LoginRequiredMixin, generic.ListView):
+class VehicleView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"
     redirect_field_name = ""
     model=Vehicle
@@ -562,6 +564,7 @@ class VehcileView(LoginRequiredMixin, generic.ListView):
             'vehicles_per_type': vehicles_per_type,
             'query': query,
             'error_msg': error_msg,
+            'user': req.user,
         }
 
         return render(req, self.template_name, context)
@@ -791,6 +794,7 @@ def fooditem_view(request):
         'foodbanks': FoodBank.objects.all(),
         'donators': donators,
         'food_groups': food_groups,
+        'user': request.user,
     }
     return render(request, 'fooditem.html', context)
 
@@ -882,6 +886,7 @@ def distributed_food_item_view(request):
         'distributed_food_items': items,
         'food_items': food_items,
         'recipient_organizations': recipient_organizations,
+        'user': request.user,
     }
     return render(request, 'distributed_food_item.html', context)
 
@@ -955,6 +960,7 @@ def foodgroup_view(request):
 
     context = {
         'foodgroups': foodgroups,
+        'user': request.user,
     }
     return render(request, 'foodgroup.html', context)
 

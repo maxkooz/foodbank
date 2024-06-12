@@ -14,6 +14,8 @@
     <p style="color:red;">{{error_msg}}</p>
     {% endif %}
 
+    <h2>All Food Banks</h2>
+    {% if user.is_staff %}
     <form method="GET">
         <label for="q">Search:</label>
         <input type="text" id="q" name="q" value="{{ query }}">
@@ -62,6 +64,46 @@
         </tbody>
     </table>
 
+    {%else%}
+    <form method="GET">
+        <label for="q">Search:</label>
+        <input type="text" id="q" name="q" value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Street Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Zip Code</th>
+                <th>Manager</th>
+                <th>Phone Number</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for foodbank in foodbanks %}
+            <tr>
+                <td>{{ foodbank.street_address }}</td>
+                <td>{{ foodbank.city }}</td>
+                <td>{{ foodbank.home_state }}</td>
+                <td>{{ foodbank.zip_code }}</td>
+
+                <td>
+                    {% for volunteer in potential_managers %}
+                        {% if foodbank.manager.id == volunteer.id %} {{ volunteer.first_name }} {{ volunteer.last_name }} {% endif %}
+                    {% endfor %}
+                </td>
+
+                <td>{{ foodbank.phone_number }}</td>
+                <td>{{ foodbank.email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {%endif%}
+
     <!-- Data summary tables -->
     <h2>Data Summary</h2>
 
@@ -83,6 +125,7 @@
         </tbody>
     </table>
 
+    {%if user.is_staff%}
     <h2>Add Food Bank</h2>
     <form method="POST">
         {% csrf_token %}
@@ -109,6 +152,7 @@
         <input type="email" id="email" name="email"><br>
         <button type="submit" name="add">Add Food Bank</button>
     </form>
+    {%endif%}
 
     <h2>Return to Main Page</h2>
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
