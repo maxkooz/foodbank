@@ -47,11 +47,6 @@ def sign_up_view(request):
     first_name = request.POST.get("first_name")
     last_name = request.POST.get("last_name")
     email = request.POST.get("email")
-    condition = False
-    if request.method == 'POST':
-        check_admin = request.POST.get('admin')
-        if check_admin == 'adminYN':
-            condition = True
 
     user = User.objects.create_user(username, email=email, password=password)
     user.first_name = first_name
@@ -65,8 +60,8 @@ def sign_up_view(request):
 def main_page_view(request):
     if not request.user.is_authenticated:
         return redirect(reverse('foodbank:home'))
-    condition = request.GET.get('condition', False)
-    return render(request, 'main_page.html',{'condition': condition})
+
+    return render(request, 'main_page.html')
 
 # from Django documentation
 def namedtuplefetchall(cursor):
