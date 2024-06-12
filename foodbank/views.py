@@ -39,7 +39,7 @@ def login_view(request):
     
 def logout_view(request):
     logout(request)
-    return redirect(reverse('foodbank:main_page'))
+    return redirect(reverse('foodbank:home'))
 
 def sign_up_view(request):
     username = request.POST.get("username")
