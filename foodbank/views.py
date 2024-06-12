@@ -452,7 +452,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
 
 @login_required(login_url='/login/')
 def volunteer_task_view(request):
-    shifts = Volunteer_Task.objects.all()
+    shifts = Volunteer_Task.objects.select_related('volunteer', 'task', 'task__associated_food_bank').all()
     volunteers = Volunteer.objects.all()
     tasks = Task.objects.all()
 
@@ -461,7 +461,8 @@ def volunteer_task_view(request):
         shifts = shifts.filter(
             Q(volunteer__first_name__icontains=query) |  # Search by volunteer first name
             Q(volunteer__last_name__icontains=query) |   # Search by volunteer last name
-            Q(task__description__icontains=query)        # Search by task description
+            Q(task__description__icontains=query) | # Search by task description
+            Q(task__associated_food_bank__city__icontains=query)
         )
 
     if request.method == 'POST':
@@ -490,6 +491,14 @@ def volunteer_task_view(request):
         'query': query,
     }
     return render(request, 'volunteer_task.html', context)
+
+@login_required(login_url='/login/')
+def volunteer_task_delete(request):
+    if request.method == 'POST':
+        shift_id = request.POST.get('shift_id')
+        shift = get_object_or_404(Volunteer_Task, id=shift_id)
+        shift.delete()
+    return redirect(reverse('foodbank:volunteer_tasks'))
 
 @login_required(login_url='/login/')
 def volunteer_task_delete(request):
