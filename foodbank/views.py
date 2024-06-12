@@ -603,17 +603,16 @@ class TransitView(LoginRequiredMixin, generic.ListView):
         foreign_entities = self.get_foreign_queryset()
 
         query = req.GET.get('q')
-        # if query:
-        #     entities = entities.filter(
-        #         Q(vehcile_type__icontains=query)
-        #     )
+        if query:
+            entities = entities.filter(
+                Q(current_available_capacity__gte=query)
+            )
 
         # data summary queries
         today = datetime.now()
         tomorrow = today + timedelta(days=1)
         today = today.strftime("%Y-%m-%d")
         tomorrow = tomorrow.strftime("%Y-%m-%d")
-        print(today, tomorrow)
         transits_today = execute_raw_sql(f"SELECT ts.id AS ts_id, ts.current_available_capacity, vo.first_name, vo.last_name, ve.vehicle_type FROM foodbank_transitschedule ts JOIN foodbank_vehicle ve ON ts.vehicle_id=ve.id JOIN foodbank_volunteer vo ON vo.id=ve.driver_volunteer_id WHERE ts.current_available_capacity > 0 AND ts.arrival_date_time BETWEEN '{today}' AND '{tomorrow}';")
         
 
@@ -691,75 +690,6 @@ class TransitView(LoginRequiredMixin, generic.ListView):
         error_msgs.append('Foreign key value must correspond to an entity that exists within foreign table')
         return False
 
-@login_required(login_url='/login/')
-def transit_view(request):
-    transit_schedules = TransitSchedule.objects.all()
-    vehicles = Vehicle.objects.all()
-
-    query = request.GET.get('q')
-    if query:
-        transit_schedules = transit_schedules.filter(
-            Q(vehicle__driver_volunteer__first_name__icontains=query) |
-            Q(vehicle__driver_volunteer__last_name__icontains=query) |
-            Q(vehicle__vehicle_type__icontains=query)
-        )
-
-    if request.method == 'POST':
-        vehicle_id = request.POST.get('vehicle')
-        arrival_period_of_operation = request.POST.get('arrival_period_of_operation')
-        departure_period_of_operation = request.POST.get('departure_period_of_operation')
-        current_available_capacity = request.POST.get('current_available_capacity')
-
-        transit_id = request.POST.get('transit_id')  # Get the ID of the transit schedule
-
-        if transit_id:  # If the ID exists, update the existing entry
-            transit_schedule = TransitSchedule.objects.get(id=transit_id)
-            transit_schedule.vehicle_id = vehicle_id
-            transit_schedule.arrival_period_of_operation = arrival_period_of_operation
-            transit_schedule.departure_period_of_operation = departure_period_of_operation
-            transit_schedule.current_available_capacity = current_available_capacity
-            transit_schedule.save()
-        else:  # If the ID does not exist, create a new entry
-            TransitSchedule.objects.create(
-                vehicle_id=vehicle_id,
-                arrival_period_of_operation=arrival_period_of_operation,
-                departure_period_of_operation=departure_period_of_operation,
-                current_available_capacity=current_available_capacity
-            )
-
-        return redirect(reverse('foodbank:transits'))
-
-    context = {
-        'transit_schedules': transit_schedules,
-        'vehicles': vehicles,
-        'query': query,
-    }
-    return render(request, 'transit.html', context)
-
-@login_required(login_url='/login/')
-def transit_delete(request):
-    if request.method == 'POST':
-        transit_id = request.POST.get('delete')
-        transit_schedule = get_object_or_404(TransitSchedule, id=transit_id)
-        transit_schedule.delete()
-    return redirect(reverse('foodbank:transits'))
-
-@login_required(login_url='/login/')
-def transit_capacity(request):
-    query = request.GET.get('q')
-    transit_schedules = TransitSchedule.objects.all()
-    if query:
-        transit_schedules = transit_schedules.filter(Q(current_available_capacity__gte=query)) #change gte value to user's search input
-
-    # if request.method == 'POST':
-    #     vehicle_id = request.POST.get('vehicle_id')
-    #     vehicle = Vehicle.objects.get(id=vehicle_id)
-    #     vehicle.arrival_period_of_operation = request.POST.get('arrival_period_of_operation')
-    #     vehicle.departure_period_of_operation = request.POST.get('departure_period_of_operation')
-    #     vehicle.current_available_capacity = request.POST.get('current_available_capacity')
-    #     vehicle.save()
-    #return redirect('transit')
-    return render(request, 'transit.html', {'transit_schedules': transit_schedules})
 
 @login_required(login_url='/login/')
 def fooditem_view(request):

@@ -48,8 +48,8 @@
 
     <form method="GET">
         <label for="q">Search:</label>
-        <input type="text" id="q" name="q" value="{{ query }}">
-        <button type="submit" formaction="{% url 'foodbank:transit_capacity' %}" name="capacity">Search</button>
+        <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter capacity..." {% else %} value="{{ query }}" {% endif %}>
+        <button type="submit" formaction="{% url 'foodbank:transits' %}">Search</button>
     </form>
 
     <table border="1">

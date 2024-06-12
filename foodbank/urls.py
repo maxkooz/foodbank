@@ -16,7 +16,6 @@ urlpatterns = [
     path('volunteer_tasks/delete/', views.volunteer_task_delete, name='volunteer_task_delete'),
     path('vehicles/', views.VehcileView.as_view(), name='vehicles'),
     path('transits/', views.TransitView.as_view(), name='transits'),
-    path('transits/capacity/', views.transit_capacity, name='transit_capacity'),
     path('fooditems/', views.fooditem_view, name='fooditems'),
     path('fooditems/delete/', views.fooditem_delete, name='fooditem_delete'),
     path('recipient_organizations/', views.recipient_organization_view, name='recipient_organizations'),
