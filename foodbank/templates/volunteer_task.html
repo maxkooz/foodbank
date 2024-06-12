@@ -32,7 +32,7 @@
         /* Set a specific width for the Food Bank City column */
         th:nth-child(3),
         td:nth-child(3) {
-            width: 150px; /* Adjust the width as needede2e2 */
+            width: 150px; /* Adjust the width as needed */
         }
     </style>
 </head>
@@ -66,25 +66,46 @@
             </tr>
         </thead>
         <tbody>
-            {% for shift in shifts %}
-            <tr>
-                <form method="POST">
-                    {% csrf_token %}
-                    <input type="hidden" name="shift_id" value="{{ shift.id }}">
-                    <td>{{ shift.volunteer.first_name }} {{ shift.volunteer.last_name }}</td>
-                    <td>{{ shift.task.description }}</td>
-                    <td>{{ shift.task.associated_food_bank.city }}</td>
-                    <td>{{ shift.task.start_date_time|date:"F d, Y H:i" }} - {{ shift.task.end_date_time|date:"H:i" }}</td>
-                    {% if user.is_staff %}
-                    <td>
-                        <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'foodbank:volunteer_task_delete' %}" name="delete">Delete</button>
-                    </td>
-                    {% endif %}
-                </form>
-            </tr>
-            {% endfor %}
-        </tbody>
+    {% for shift in shifts %}
+    <tr>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="shift_id" value="{{ shift.id }}">
+            <td>
+                {% if user.is_staff %}
+                <select name="volunteer">
+                    {% for volunteer in volunteers %}
+                    <option value="{{ volunteer.id }}" {% if shift.volunteer_id == volunteer.id %}selected{% endif %}>{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                {{ shift.volunteer.first_name }} {{ shift.volunteer.last_name }}
+                {% endif %}
+            </td>
+            <td>
+                {% if user.is_staff %}
+                <select id="task" name="task">
+                    {% for task in tasks %}
+                    <option value="{{ task.id }}" {% if shift.task_id == task.id %}selected{% endif %}>{{ task.description }} - {{ task.start_date_time|date:"F d, Y H:i" }} - {{ task.end_date_time|date:"H:i" }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+{{ shift.task.description }} - {{ shift.task.start_date_time|date:"F d, Y h:i A" }} - {{ shift.task.end_date_time|date:"h:i A" }}
+{% endif %}
+            </td>
+            <td>{{ shift.task.associated_food_bank.city }}</td>
+<td>{{ shift.task.start_date_time|date:"F d, Y h:i A" }} - {{ shift.task.end_date_time|date:"h:i A" }}</td>
+
+            {% if user.is_staff %}
+            <td>
+                <button type="submit" name="save">Save</button>
+                <button type="submit" formaction="{% url 'foodbank:volunteer_task_delete' %}" name="delete">Delete</button>
+            </td>
+            {% endif %}
+        </form>
+    </tr>
+    {% endfor %}
+</tbody>
     </table>
 </div>
 
@@ -98,9 +119,9 @@
         {% endfor %}
     </select><br>
     <label for="task">Task:</label>
-    <select id="task" name="task">
+    <select id="task1" name="task">
         {% for task in tasks %}
-        <option value="{{ task.id }}">{{ task.description }} - {{ task.start_date_time|date:"F d, Y H:i" }} - {{ task.end_date_time|date:"H:i" }}</option>
+<option value="{{ task.id }}">{{ task.description }} - {{ task.start_date_time|date:"F d, Y h:i A" }} - {{ task.end_date_time|date:"h:i A" }}</option>
         {% endfor %}
     </select><br>
     <button type="submit" name="add">Add Volunteer Task</button>
