@@ -27,6 +27,29 @@ def admin_login_view(request):
             error_msg = 'Invalid credentials. Please try again.'
             return render(request, 'admin_login.html', {'error_msg': error_msg})
     return render(request, 'admin_login.html')
+
+def admin_sign_up(request):
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+    first_name = request.POST.get("first_name")
+    last_name = request.POST.get("last_name")
+    email = request.POST.get("email")
+    admin_key = request.POST.get("admin_key")
+
+    if admin_key == "MakeMeAdmin":
+        user = User.objects.create_user(username, email=email, password=password)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.is_staff = True
+        user.save()
+
+        login(request, user)
+
+        return redirect(reverse('foodbank:main_page'))
+    else:
+        error_msg = "Incorrect Admin Key."
+        return redirect(reverse('foodbank:admin_login')+'?error_msg='+error_msg)
+
 def home_view(request):
     error_msg = request.GET.get('error_msg')
 
@@ -44,14 +67,14 @@ def login_view(request):
     if user is not None:
         login(request, user)
 
-        return redirect(reverse('foodbank:limited_main_page'))
+        return redirect(reverse('foodbank:main_page'))
     else:
         error_msg = 'Login Failed. Please enter username and password or create new account.'
         return redirect(reverse('foodbank:home')+'?error_msg='+error_msg)
     
 def logout_view(request):
     logout(request)
-    return redirect(reverse('foodbank:limited_main_page'))
+    return redirect(reverse('foodbank:main_page'))
 
 def sign_up_view(request):
     username = request.POST.get("username")
@@ -69,21 +92,13 @@ def sign_up_view(request):
 
     return redirect(reverse('foodbank:limited_main_page'))
 
-@login_required(login_url='/login/')
-def limited_main_page_view(request):
-    if not request.user.is_authenticated:
-        return redirect(reverse('foodbank:home'))
-
-    return render(request, 'limited_main_page.html')
-
-
 def main_page_view(request):
     if not request.user.is_authenticated:
         return redirect(reverse('foodbank:home'))
 
     msg = request.GET.get('msg')
     global dbSetupComplete
-    return render(request, 'main_page.html', {'msg': msg, 'dbSetupComplete': dbSetupComplete})
+    return render(request, 'main_page.html', {'msg': msg, 'dbSetupComplete': dbSetupComplete, 'user': request.user})
 
 # from Django documentation
 def namedtuplefetchall(cursor):
