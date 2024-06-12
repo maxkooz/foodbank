@@ -17,8 +17,8 @@
     <h2>All Food Banks</h2>
     {% if user.is_staff %}
     <form method="GET">
-        <label for="q">Search:</label>
-        <input type="text" id="q" name="q" value="{{ query }}">
+        <label for="q">Search by any address, city, state, zip, phone, or email:</label>
+        <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter text..." {%else%} value="{{ query }}" {%endif%}>
         <button type="submit">Search</button>
     </form>
     <table border="1">

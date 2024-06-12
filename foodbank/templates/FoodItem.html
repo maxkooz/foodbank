@@ -8,13 +8,14 @@
 </head>
 <body>
     <h1>Food Items</h1>
+
+    <h2>All Food Items</h2>
     <form method="GET">
-        <label for="q">Search:</label>
-        <input type="text" id="q" name="q" value="{{ query }}">
+        <label for="q">Search by any field:</label>
+        <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter query..." {%else%} value="{{ query }}" {% endif %}>
         <button type="submit">Search</button>
     </form>
 
-    <h2>All Food Items</h2>
     {% if user.is_staff %}
     <table border="1">
         <thead>
