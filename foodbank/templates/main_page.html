@@ -100,7 +100,7 @@
         <button onclick="location.href='{% url 'foodbank:volunteers' %}'" {% if user.is_staff == False %} disabled style="background-color: darkgray; color: lightgrey;" {% endif %}>Volunteer</button>
         <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
         <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
-        <button onclick="location.href='{% url 'foodbank:volunteer_tasks' %}'">Volunteer_Tasks</button>
+        <button onclick="location.href='{% url 'foodbank:volunteer_tasks' %}'">Individual Shifts</button>
         <button onclick="location.href='{% url 'foodbank:tasks' %}'">Tasks</button>
         <button onclick="location.href='{% url 'foodbank:foodbanks' %}'">Food Banks</button>
         <button onclick="location.href='{% url 'foodbank:fooditems' %}'">Food Items</button>
