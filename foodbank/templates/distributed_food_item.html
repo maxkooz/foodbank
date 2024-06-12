@@ -8,6 +8,8 @@
 </head>
 <body>
     <h1>Distributed Food Items</h1>
+
+    {% if user.is_staff %}
     <table border="1">
         <thead>
             <tr>
@@ -45,6 +47,35 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {%else%}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Food Item</th>
+                <th>Recipient Organization</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in distributed_food_items %}
+            <tr>
+                    <td>
+                        {% for food_item in food_items %}
+                            {% if item.food_item_id == food_item.id %}{{ food_item.name }}{% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for organization in recipient_organizations %}
+                            {% if item.recipient_org_id == organization.id %}{{ organization.name }}{% endif %}
+                        {% endfor %}
+                    </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {%endif%}
+
+    {% if user.is_staff %}
     <h2>Add Distributed Food Item</h2>
     <form method="POST">
         {% csrf_token %}
@@ -62,6 +93,7 @@
         </select><br>
         <button type="submit" name="add">Add Distributed Food Item</button>
     </form>
+    {%endif%}
 
     <h2>Return to Main Page</h2>
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>

@@ -13,6 +13,9 @@
         <input type="text" id="q" name="q" value="{{ query }}">
         <button type="submit">Search</button>
     </form>
+
+    <h2>All Food Items</h2>
+    {% if user.is_staff %}
     <table border="1">
         <thead>
             <tr>
@@ -68,6 +71,47 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% else %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Food Group</th>
+                <th>Expiration Date</th>
+                <th>Item Size</th>
+                <th>Associated Food Bank</th>
+                <th>Donator</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fooditem in fooditems %}
+            <tr>
+                <td>{{ fooditem.name }}</td>
+                <td>
+                    {% for group in food_groups %}
+                        {% if fooditem.food_group_id == group.id %} {{ group.name }} {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ fooditem.expiration_date|date:'Y-m-d' }}</td>
+                <td>{{ fooditem.item_size }}</td>
+                <td>
+                    {% for foodbank in foodbanks %}
+                        {% if fooditem.associated_food_bank_id == foodbank.id %} {{ foodbank.street_address }} {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for donator in donators %}
+                        {% if fooditem.donator_id == donator.id %} {{ donator.first_name }} {{ donator.last_name }} {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {%endif%}
+
+    {% if user.is_staff %}
     <h2>Add Food Item</h2>
     <form method="POST">
         {% csrf_token %}
@@ -100,6 +144,7 @@
         </select><br>
         <button type="submit" name="add">Add Food Item</button>
     </form>
+    {% endif %}
 
     <h2>Return to Main Page</h2>
     <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
