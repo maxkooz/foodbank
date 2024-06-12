@@ -24,7 +24,7 @@
 
         <div class="form-box">
             <h2>Create Admin User</h2>
-            <form method="post" action="{% url 'foodbank:admin_sign_up' %}">
+            <form method="post" action="{% url 'foodbank:staff_sign_up' %}">
                 {% csrf_token %}
                 <label for="first_name">First Name:</label>
                 <input type="text" id="first_name" name="first_name">

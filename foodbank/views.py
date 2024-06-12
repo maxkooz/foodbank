@@ -15,7 +15,7 @@ import re
 from datetime import datetime, timedelta
 from collections import namedtuple
 
-def admin_login_view(request):
+def staff_login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -25,18 +25,18 @@ def admin_login_view(request):
             return redirect('foodbank:main_page')
         else:
             error_msg = 'Invalid credentials. Please try again.'
-            return render(request, 'admin_login.html', {'error_msg': error_msg})
-    return render(request, 'admin_login.html')
+            return render(request, 'staff_login.html', {'error_msg': error_msg})
+    return render(request, 'staff_login.html')
 
-def admin_sign_up(request):
+def staff_sign_up(request):
     username = request.POST.get("username")
     password = request.POST.get("password")
     first_name = request.POST.get("first_name")
     last_name = request.POST.get("last_name")
     email = request.POST.get("email")
-    admin_key = request.POST.get("admin_key")
+    staff_key = request.POST.get("staff_key")
 
-    if admin_key == "MakeMeAdmin":
+    if staff_key == "MakeMeStaff": # very primitive security lol
         user = User.objects.create_user(username, email=email, password=password)
         user.first_name = first_name
         user.last_name = last_name
@@ -48,7 +48,7 @@ def admin_sign_up(request):
         return redirect(reverse('foodbank:main_page'))
     else:
         error_msg = "Incorrect Admin Key."
-        return redirect(reverse('foodbank:admin_login')+'?error_msg='+error_msg)
+        return redirect(reverse('foodbank:staff_login')+'?error_msg='+error_msg)
 
 def home_view(request):
     error_msg = request.GET.get('error_msg')
