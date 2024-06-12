@@ -1,5 +1,7 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
+from django.views.generic import TemplateView
+
 from . import views
 
 app_name = 'foodbank'
@@ -14,7 +16,6 @@ urlpatterns = [
     path('volunteers/', views.VolunteerView.as_view(), name='volunteers'),
     path('foodbanks/', views.FoodBankView.as_view(), name='foodbanks'),
     path('tasks/', views.TaskView.as_view(), name='tasks'),
-    path('volunteer_tasks/', views.volunteer_task_view, name='volunteer_tasks'),
     path('volunteer_tasks/delete/', views.volunteer_task_delete, name='volunteer_task_delete'),
     path('vehicles/', views.VehcileView.as_view(), name='vehicles'),
     path('transits/', views.TransitView.as_view(), name='transits'),
@@ -29,4 +30,8 @@ urlpatterns = [
     path('donators/delete/', views.donator_delete, name='donator_delete'),
     path('foodgroups/', views.foodgroup_view, name='foodgroups'),
     path('foodgroups/delete/', views.foodgroup_delete, name='foodgroup_delete'),
+    path('vol_add/', TemplateView.as_view(template_name='vol_add.html'), name='vol_add'),
+    path('volunteer_tasks/', views.volunteer_task_view, name='volunteer_tasks'),
+    path('task_add/', views.volunteer_task_view, name='task_add'),
+    path('limited_main_page/', views.limited_main_page_view, name='limited_main_page'),
 ]

@@ -1,3 +1,6 @@
+from urllib.parse import urlencode
+
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
@@ -54,20 +57,28 @@ def logout_view(request):
     return redirect(reverse('foodbank:limited_main_page'))
 
 def sign_up_view(request):
-    username = request.POST.get("username")
-    password = request.POST.get("password")
-    first_name = request.POST.get("first_name")
-    last_name = request.POST.get("last_name")
-    email = request.POST.get("email")
+    if request.method == 'POST':
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
 
-    user = User.objects.create_user(username, email=email, password=password)
-    user.first_name = first_name
-    user.last_name = last_name
-    user.save()
+        user = User.objects.create_user(username, email=email, password=password)
+        user.first_name = first_name
+        user.last_name = last_name
 
-    login(request, user)
+        if username == 'admin':
+            user.is_staff = True
+            user.is_superuser = True
 
-    return redirect(reverse('foodbank:limited_main_page'))
+        user.save()
+
+        login(request, user)
+
+        return redirect(reverse('foodbank:limited_main_page'))
+    else:
+        return render(request, 'sign_up.html')
 
 @login_required(login_url='/login/')
 def limited_main_page_view(request):
@@ -139,7 +150,7 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         }
 
         return render(req, self.template_name, context)
-    
+
     def post(self, request, *args, **kwargs):
         error_msgs = []
 
@@ -153,9 +164,22 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
         email = request.POST.get('email')
 
         # Check that at least one field is not empty
-        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email], error_msgs):            
+        if validateTextFields([first_name, last_name, street_address, city, home_state, zip_code, phone_number, email],
+                              error_msgs):
             if 'add' in request.POST:
-            
+                if not request.user.is_superuser:
+                    Volunteer.objects.create(
+                        first_name=first_name,
+                        last_name=last_name,
+                        street_address=street_address,
+                        city=city,
+                        home_state=home_state,
+                        zip_code=zip_code,
+                        phone_number=phone_number,
+                        email=email
+                    )
+                    messages.success(request, 'Volunteer added successfully')
+                    return redirect('foodbank:limited_main_page')
                 Volunteer.objects.create(
                     first_name=first_name,
                     last_name=last_name,
@@ -166,6 +190,10 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
                     phone_number=phone_number,
                     email=email
                 )
+                # Add confirmation message here
+                messages.success(request, 'Volunteer added successfully')
+                return redirect(reverse("foodbank:volunteers"))  # Redirect to volunteer list page with success message
+
             elif 'edit' in request.POST:
                 volunteer_id = request.POST.get('volunteer_id')
                 volunteer = Volunteer.objects.get(id=volunteer_id)
@@ -175,9 +203,9 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
                     if name != 'id' and name in request.POST and request.POST.get(name) != "":
                         newval = request.POST.get(name)
                         print(name, newval)
-                        
+
                         volunteer.__setattr__(name, newval)
-                
+
                 volunteer.save()
             elif 'delete' in request.POST:
                 volunteer_id = request.POST.get('volunteer_id')
@@ -186,15 +214,12 @@ class VolunteerView(LoginRequiredMixin, generic.ListView):
                     Volunteer.objects.get(id=volunteer_id).delete()
                 except Volunteer.DoesNotExist:
                     error_msg = 'Error when deleting Volunteer ' + str(volunteer_id) + ': volunteer does not exist'
-                    return redirect(reverse("foodbank:volunteers")+'?error_msg='+error_msg)
+                    return redirect(reverse("foodbank:volunteers") + '?error_msg=' + error_msg)
 
         else:
-            return redirect(reverse("foodbank:volunteers")+'?error_msg='+'\r\n'.join(error_msgs))
-
-
+            return redirect(reverse("foodbank:volunteers") + '?error_msg=' + '\r\n'.join(error_msgs))
 
         return redirect(reverse("foodbank:volunteers"))
-
 
 class FoodBankView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"
@@ -490,7 +515,7 @@ def volunteer_task_view(request):
         'tasks': tasks,
         'query': query,
     }
-    return render(request, 'volunteer_task.html', context)
+    return render(request, 'individual_shift.html', context)
 
 @login_required(login_url='/login/')
 def volunteer_task_delete(request):
@@ -501,12 +526,24 @@ def volunteer_task_delete(request):
     return redirect(reverse('foodbank:volunteer_tasks'))
 
 @login_required(login_url='/login/')
-def volunteer_task_delete(request):
+def add_volunteer_task_view(request):
+    volunteers = Volunteer.objects.all()
+    tasks = Task.objects.all()
+
     if request.method == 'POST':
-        shift_id = request.POST.get('shift_id')
-        shift = get_object_or_404(Volunteer_Task, id=shift_id)
-        shift.delete()
-    return redirect(reverse('foodbank:volunteer_tasks'))
+        form = VolunteerTaskForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('foodbank:volunteer_tasks'))
+    else:
+        form = VolunteerTaskForm()
+
+    context = {
+        'form': form,
+        'volunteers': volunteers,
+        'tasks': tasks,
+    }
+    return render(request, 'vol_add.html', context)
 
 class VehcileView(LoginRequiredMixin, generic.ListView):
     login_url = "/login/"

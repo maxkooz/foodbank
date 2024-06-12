@@ -64,8 +64,8 @@
         }
 
         a:link {
-           text-decoration: none;
-           color: darkorange;
+            text-decoration: none;
+            color: darkorange;
         }
         a:visited {
             text-decoration: none;
@@ -79,14 +79,48 @@
             text-decoration: none;
             color: darkorange;
         }
+
+        /* Styles for messages */
+        .messages {
+            margin: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .messages .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .messages .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .messages .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
     <div class="header">Foodbank Management System</div>
     <div class="subheader">Welcome to the Foodbank Main Page</div>
+
+    <!-- Display messages -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="button-container">
         <button onclick="location.href='{% url 'foodbank:volunteer_tasks' %}'">Individual Shifts</button>
         <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
+        <button onclick="location.href='{% url 'foodbank:vol_add' %}'">Add Volunteer</button>
+        <button onclick="location.href='{% url 'foodbank:task_add' %}'">Add Task</button>
         <button class="logout-button" onclick="location.href='{% url 'foodbank:logout' %}'">Logout</button>
     </div>
 </body>
