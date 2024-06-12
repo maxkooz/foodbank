@@ -82,23 +82,37 @@
     </style>
 </head>
 <body>
-    <div class="header">Foodbank Management System</div>
-    <div class="subheader">Welcome to the Foodbank Main Page</div>
-    <div class="button-container">
-        <button onclick="location.href='{% url 'foodbank:volunteers' %}'">Volunteer</button>
-        <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
-        <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
-        <button onclick="location.href='{% url 'foodbank:volunteer_tasks' %}'">Volunteer_Tasks</button>
-        <button onclick="location.href='{% url 'foodbank:tasks' %}'">Tasks</button>
-        <button onclick="location.href='{% url 'foodbank:foodbanks' %}'">Food Banks</button>
-        <button onclick="location.href='{% url 'foodbank:fooditems' %}'">Food Items</button>
-        <button onclick="location.href='{% url 'foodbank:foodgroups' %}'">Food Groups</button>
-        <button onclick="location.href='{% url 'foodbank:donators' %}'">Donators</button>
-        <button onclick="location.href='{% url 'foodbank:distributed_food_items' %}'">Distributed Food Items</button>
-        <button onclick="location.href='{% url 'foodbank:recipient_organizations' %}'">Recipient Organizations</button>
-        <button class="logout-button" onclick="location.href='{% url 'foodbank:logout' %}'">Logout</button>
-    </div>
-
-
+    <h1> Condition value: {{ condition }} </h1>
+    {% if condition %}
+        <p>
+            <div class="header">Foodbank Management System</div>
+            <div class="subheader">Welcome to the Foodbank Main Page</div>
+            <div class="button-container">
+                <button onclick="location.href='{% url 'foodbank:volunteers' %}'">Volunteer</button>
+                <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
+                <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
+                <button onclick="location.href='{% url 'foodbank:volunteer_tasks' %}'">Volunteer_Tasks</button>
+                <button onclick="location.href='{% url 'foodbank:tasks' %}'">Tasks</button>
+                <button onclick="location.href='{% url 'foodbank:foodbanks' %}'">Food Banks</button>
+                <button onclick="location.href='{% url 'foodbank:fooditems' %}'">Food Items</button>
+                <button onclick="location.href='{% url 'foodbank:foodgroups' %}'">Food Groups</button>
+                <button onclick="location.href='{% url 'foodbank:donators' %}'">Donators</button>
+                <button onclick="location.href='{% url 'foodbank:distributed_food_items' %}'">Distributed Food Items</button>
+                <button onclick="location.href='{% url 'foodbank:recipient_organizations' %}'">Recipient Organizations</button>
+                <button class="logout-button" onclick="location.href='{% url 'foodbank:logout' %}'">Logout</button>
+            </div>
+        </p>
+    {% else %}
+        <p>
+            <div class="header">Foodbank Management System</div>
+            <div class="subheader">Welcome to the Foodbank Main Page</div>
+            <div class="button-container">
+                <button onclick="location.href='{% url 'foodbank:volunteers' %}'">Volunteer</button>
+                <button onclick="location.href='{% url 'foodbank:vehicles' %}'">Vehicles</button>
+                <button onclick="location.href='{% url 'foodbank:transits' %}'">Transit Schedules</button>
+                <button class="logout-button" onclick="location.href='{% url 'foodbank:logout' %}'">Logout</button>
+            </div>
+        </p>
+    {% endif %}
 </body>
 </html>
