@@ -14,12 +14,6 @@
     <p style="color:red;">{{error_msg}}</p>
     {% endif %}
 
-    <form method="GET">
-        <label for="q">Search:</label>
-        <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter description..." {% else %} value="{{query}}" {% endif %}>
-        <button type="submit">Search</button>
-    </form>
-
     <!-- Vols Per Task -->
     <h2>Available Upcoming Tasks</h2>
     <table border="1">

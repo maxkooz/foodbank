@@ -22,6 +22,7 @@
                 <th>Driver</th>
                 <th>Vehicle Type</th>
                 <th>Remaining Capacity</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -37,7 +38,6 @@
                         <input type="hidden" name="transit_id" value="{{ row.ts_id }}">
                         <button type="submit" name="join">Join Transit</button>
                     </form>
-                    
                 </td>
             </tr>
             {% endfor %}
@@ -47,7 +47,7 @@
     <h2>All Transit Schedules</h2>
 
     <form method="GET">
-        <label for="q">Search transits by available capacity:</label>
+        <label for="q">Filter by available capacity:</label>
         <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter capacity..." {% else %} value="{{ query }}" {% endif %}>
         <button type="submit" formaction="{% url 'foodbank:transits' %}">Search</button>
     </form>
@@ -60,7 +60,9 @@
                 <th>Arrival Time</th>
                 <th>Departure Time</th>
                 <th>Current Available Capacity</th>
+                {% if user.is_staff %}
                 <th>Action</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -70,21 +72,23 @@
                     {% csrf_token %}
                     <td>{{ transit_schedule.id }}</td>
                     <td>
-                        <select name="vehicle">
+                        <select name="vehicle" {% if not user.is_staff %} disabled {% endif %}>
                             <option value="" {% if not transit_schedule.vehicle %} selected {% endif %}>Select Vehicle</option>
                             {% for vehicle in vehicles %}
                                 <option value="{{ vehicle.id }}" {% if transit_schedule.vehicle_id == vehicle.id %} selected {% endif %}>{{ vehicle.driver_volunteer.first_name }} {{ vehicle.driver_volunteer.last_name }} - {{ vehicle.vehicle_type }}</option>
                             {% endfor %}
                         </select>
                     </td>
-                    <td><input type="datetime-local" name="arrival_date_time" value="{{ transit_schedule.arrival_date_time|date:'Y-m-d\TH:i' }}"></td>
-                    <td><input type="datetime-local" name="departure_date_time" value="{{ transit_schedule.departure_date_time|date:'Y-m-d\TH:i' }}"></td>
-                    <td><input type="number" name="current_available_capacity" value="{{ transit_schedule.current_available_capacity }}"></td>
+                    <td><input type="datetime-local" name="arrival_date_time" {% if not user.is_staff %} readonly {% endif %} value="{{ transit_schedule.arrival_date_time|date:'Y-m-d\TH:i' }}"></td>
+                    <td><input type="datetime-local" name="departure_date_time" {% if not user.is_staff %} readonly {% endif %} value="{{ transit_schedule.departure_date_time|date:'Y-m-d\TH:i' }}"></td>
+                    <td><input type="number" name="current_available_capacity" {% if not user.is_staff %} readonly {% endif %} value="{{ transit_schedule.current_available_capacity }}"></td>
+                    {% if user.is_staff %}
                     <td>
                         <input type="hidden" name="transit_id" value="{{ transit_schedule.id }}">
                         <button type="submit" name="edit">Save Edits</button>
                         <button type="submit" name="delete">Delete</button>
                     </td>
+                    {% endif %}
                 </form>
             </tr>
             {% endfor %}
