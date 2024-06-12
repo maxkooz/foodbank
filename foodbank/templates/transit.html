@@ -47,7 +47,7 @@
     <h2>All Transit Schedules</h2>
 
     <form method="GET">
-        <label for="q">Search:</label>
+        <label for="q">Filter by available capacity:</label>
         <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter capacity..." {% else %} value="{{ query }}" {% endif %}>
         <button type="submit" formaction="{% url 'foodbank:transits' %}">Search</button>
     </form>
