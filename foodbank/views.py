@@ -90,7 +90,7 @@ def sign_up_view(request):
 
     login(request, user)
 
-    return redirect(reverse('foodbank:limited_main_page'))
+    return redirect(reverse('foodbank:main_page'))
 
 def main_page_view(request):
     if not request.user.is_authenticated:
