@@ -23,7 +23,7 @@
         </div>
 
         <div class="form-box">
-            <h2>Create Admin User</h2>
+            <h2>Create Staff User</h2>
             <form method="post" action="{% url 'foodbank:staff_sign_up' %}">
                 {% csrf_token %}
                 <label for="first_name">First Name:</label>
@@ -36,9 +36,9 @@
                 <input type="text" id="username" name="username">
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password">
-                <label for="admin_key">Admin Key:</label>
-                <input type="text" id="admin_key" name="admin_key">
-                <button type="submit">Create Admin User</button>
+                <label for="staff_key">Staff Key:</label>
+                <input type="text" id="staff_key" name="staff_key">
+                <button type="submit">Create Staff User</button>
             </form>
         </div>
     </div>

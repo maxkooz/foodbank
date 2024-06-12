@@ -47,7 +47,7 @@ def staff_sign_up(request):
 
         return redirect(reverse('foodbank:main_page'))
     else:
-        error_msg = "Incorrect Admin Key."
+        error_msg = "Incorrect Staff Key."
         return redirect(reverse('foodbank:staff_login')+'?error_msg='+error_msg)
 
 def home_view(request):
