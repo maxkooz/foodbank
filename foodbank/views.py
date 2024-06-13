@@ -660,25 +660,29 @@ class TransitView(LoginRequiredMixin, generic.ListView):
         today = today.strftime("%Y-%m-%d")
         tomorrow = tomorrow.strftime("%Y-%m-%d")
         transits_today = execute_raw_sql(f"SELECT ts.id AS ts_id, ts.current_available_capacity, vo.first_name, vo.last_name, ve.vehicle_type FROM foodbank_transitschedule ts JOIN foodbank_vehicle ve ON ts.vehicle_id=ve.id JOIN foodbank_volunteer vo ON vo.id=ve.driver_volunteer_id WHERE ts.current_available_capacity > 0 AND ts.arrival_date_time BETWEEN '{today}' AND '{tomorrow}';")
-        
 
+        condition = req.GET.get('condition', 'False')
         context = {
             self.context_object_name: entities,
             self.foreign_context_name: foreign_entities,
             'transits_today': transits_today,
             'query': query,
             'error_msg': error_msg,
+            'condition': condition
         }
 
         return render(req, self.template_name, context)
-    
+
     def post(self, request, *args, **kwargs):
-        # current just decrements available capacity on join   
+        # current just decrements available capacity on join
         if 'join' in request.POST:
-            transit_id = request.POST.get('transit_id')
-            transit = self.model.objects.get(id=transit_id)
-            transit.current_available_capacity -= 1
-            transit.save()
+            if not request.session.get('join', False):
+                transit_id = request.POST.get('transit_id')
+                transit = self.model.objects.get(id=transit_id)
+                transit.current_available_capacity -= 1
+                request.session['join'] = True
+
+                transit.save()
 
             return redirect(reverse("foodbank:"+self.context_object_name))
 

@@ -67,6 +67,13 @@
 
     <!-- All task entities -->
     <h2>All Tasks</h2>
+
+    <form method="GET">
+        <label for="q">Search by task description:</label>
+        <input type="text" id="q" name="q" {% if query == None %} placeholder="Enter description..." {% else %} value="{{query}}" {% endif %}>
+        <button type="submit">Search</button>
+    </form>
+
     {% if user.is_staff %}
     <table border="1">
         <thead>
