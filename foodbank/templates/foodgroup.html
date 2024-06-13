@@ -23,7 +23,7 @@
         }
         .form-container, .table-container, .add-foodgroup, .main-page {
             width: 80%;
-            max-width: 1200px;
+            max-width: 800px;
             margin-bottom: 20px;
         }
         form {
@@ -77,7 +77,7 @@
         th, td {
             padding: 10px;
             border: 1px solid #ccc;
-            text-align: left;
+            text-align: middle;
         }
         th {
             background-color: #f4f4f4;
@@ -85,6 +85,10 @@
         a {
             text-decoration: none;
             color: inherit;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px; /* Adjust the gap between buttons */
         }
     </style>
 </head>
@@ -108,8 +112,10 @@
                         <input type="hidden" name="foodgroup_id" value="{{ foodgroup.id }}">
                         <td><input type="text" name="name" value="{{ foodgroup.name }}"></td>
                         <td>
-                            <button type="submit" name="save">Save</button>
-                            <button type="submit" formaction="{% url 'foodbank:foodgroup_delete' %}" name="delete">Delete</button>
+                            <div class="button-container">
+                                <button type="submit" name="save">Save</button>
+                                <button type="submit" formaction="{% url 'foodbank:foodgroup_delete' %}" name="delete">Delete</button>
+                            </div>
                         </td>
                     </form>
                 </tr>
@@ -150,7 +156,7 @@
 
 <div class="main-page">
     <h2>Return to Main Page</h2>
-    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: inherit;">Main Page</a></button>
+    <button onclick="location.href='{% url 'foodbank:main_page' %}'">Main Page</button>
 </div>
 
 </body>
