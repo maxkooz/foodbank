@@ -103,7 +103,7 @@
     <h5><em>Search transit vehicles by vehicle type, or view summary about each transit vehicle type.</em></h5>
     <h2>All Vehicles</h2>
     <form method="GET">
-        <label for="q">Search by vehicle type:</label>
+        <label for="q">Search by any attribute:</label>
         <input type="text" id="q" name="q" {% if query == None %} placeholder="Vehicle type..." {%else%} value="{{ query }}" {%endif%}>
         <button type="submit">Search</button>
     </form>
