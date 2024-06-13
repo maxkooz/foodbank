@@ -544,7 +544,7 @@ class VehicleView(LoginRequiredMixin, generic.ListView):
     
     def get_foreign_queryset(self):
         return self.foreign_model.objects.all()
-    
+
     def get(self, req):
         error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
         entities = self.get_queryset()
@@ -553,12 +553,16 @@ class VehicleView(LoginRequiredMixin, generic.ListView):
         query = req.GET.get('q')
         if query:
             entities = entities.filter(
-                Q(vehcile_type__icontains=query)
+                Q(vehicle_type__icontains=query) |
+                Q(driver_volunteer__first_name__icontains=query) |
+                Q(driver_volunteer__last_name__icontains=query) |
+                Q(total_passenger_capacity__icontains=query)
             )
 
         # data summary queries
-        vehicles_per_type = execute_raw_sql("SELECT vehicle_type, COUNT(id) as num_vehicles, SUM(total_passenger_capacity) as cum_capacity FROM foodbank_vehicle GROUP BY vehicle_type;")
-  
+        vehicles_per_type = execute_raw_sql(
+            "SELECT vehicle_type, COUNT(id) as num_vehicles, SUM(total_passenger_capacity) as cum_capacity FROM foodbank_vehicle GROUP BY vehicle_type;")
+
         context = {
             self.context_object_name: entities,
             self.foreign_context_name: foreign_entities,
