@@ -525,7 +525,7 @@ def volunteer_task_view(request):
         shifts = shifts.filter(
             Q(volunteer__first_name__icontains=query) |  # Search by volunteer first name
             Q(volunteer__last_name__icontains=query) |   # Search by volunteer last name
-            Q(task__description__icontains=query) |      # Search by task description
+            Q(task__description__icontains=query) |      # 1Search by task description
             Q(task__associated_food_bank__city__icontains=query)  # Search by food bank city
         )
 
