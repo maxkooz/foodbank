@@ -5,24 +5,108 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipient Organizations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            font-family: 'Libre Baskerville', serif;
+            background-color: #add8e6;
+            color: #1d3557;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #1d3557;
+        }
+        .form-container, .table-container, .add-organization, .main-page {
+            width: 80%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        label {
+            margin: 5px 0;
+        }
+        input[type="text"], input[type="number"], input[type="datetime-local"], select {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 5px;
+            background-color: #FFDBBB;
+            color: darkorange;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
 </head>
 <body>
-    <h1>Recipient Organizations</h1>
-    <table border="1">
+<h1>Recipient Organizations</h1>
+
+<div class="table-container">
+    <table style="table-layout: fixed;">
         <thead>
-            <tr>
-                <th>Name</th>
-                <th>Street Address</th>
-                <th>City</th>
-                <th>State</th>
-                <th>ZIP Code</th>
-                <th>Phone Number</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
+        <tr>
+            <th>Name</th>
+            <th>Street Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>ZIP Code</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>
         </thead>
         <tbody>
-            {% for organization in recipient_organizations %}
+        {% for organization in recipient_organizations %}
             <tr>
                 <form method="POST">
                     {% csrf_token %}
@@ -40,9 +124,12 @@
                     </td>
                 </form>
             </tr>
-            {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
+</div>
+
+<div class="add-organization">
     <h2>Add Recipient Organization</h2>
     <form method="POST">
         {% csrf_token %}
@@ -62,10 +149,12 @@
         <input type="text" id="email" name="email"><br>
         <button type="submit" name="add">Add Recipient Organization</button>
     </form>
+</div>
 
+<div class="main-page">
     <h2>Return to Main Page</h2>
-    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: black;">Main Page</a></button>
+    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: inherit;">Main Page</a></button>
+</div>
 
 </body>
-
 </html>
