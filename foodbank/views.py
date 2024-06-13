@@ -69,15 +69,17 @@ def login_view(request):
     if user is not None:
         login(request, user)
 
-        vol = Volunteer.objects.filter(
-            first_name=request.user.first_name, 
-            last_name=request.user.last_name,
-            email=user.email
-            )[0]
-        
         url = reverse('foodbank:main_page')
         response = HttpResponseRedirect(url)
-        response.set_cookie('user_volunteer_id', json.dumps(vol.id))
+
+        if not user.is_staff:
+            vol = Volunteer.objects.filter(
+                first_name=request.user.first_name, 
+                last_name=request.user.last_name,
+                email=user.email
+                )[0]
+        
+            response.set_cookie('user_volunteer_id', json.dumps(vol.id))
 
         return response
     else:
