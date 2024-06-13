@@ -454,6 +454,10 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             task_id = request.POST.get('task_id')
             task = Task.objects.get(id=task_id)
 
+            if len(Volunteer_Task.objects.filter(volunteer=vol, task=task)) > 0:
+                error_msg = 'Volunteer ' + vol.first_name + ' ' + vol.last_name + ' already assigned to Task \"' + task.description + '\"' 
+                return redirect(reverse('foodbank:'+self.context_object_name)+ '?error_msg='+error_msg)
+            
             Volunteer_Task.objects.create(volunteer=vol, task=task)
 
             return redirect(reverse('foodbank:'+self.context_object_name))
@@ -522,6 +526,7 @@ def volunteer_task_view(request):
     volunteers = Volunteer.objects.all()
     tasks = Task.objects.all()
 
+    error_msg = request.GET.get('error_msg') if 'error_msg' in request.GET else None
     query = request.GET.get('q')
     if query:
         shifts = shifts.filter(
@@ -543,6 +548,12 @@ def volunteer_task_view(request):
             shift.task_id = task_id
             shift.save()
         else:  # If the ID does not exist, create a new entry
+            if len(Volunteer_Task.objects.filter(volunteer_id=volunteer_id, task_id=task_id)) > 0:
+                vol = Volunteer.objects.get(id=volunteer_id)
+                task = Task.objects.get(id=task_id)
+                error_msg = 'Volunteer ' + vol.first_name + ' ' + vol.last_name + ' already assigned to Task \"' + task.description + '\"' 
+                return redirect(reverse('foodbank:volunteer_tasks')+ '?error_msg='+error_msg)
+ 
             Volunteer_Task.objects.create(
                 volunteer_id=volunteer_id,
                 task_id=task_id
@@ -559,6 +570,7 @@ def volunteer_task_view(request):
         'tasks': tasks,
         'query': query,
         'user_volunteer': user_vol,
+        'error_msg': error_msg,
     }
     return render(request, 'volunteer_task.html', context)
 
