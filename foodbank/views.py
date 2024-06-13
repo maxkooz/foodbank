@@ -553,7 +553,7 @@ class VehicleView(LoginRequiredMixin, generic.ListView):
         query = req.GET.get('q')
         if query:
             entities = entities.filter(
-                Q(vehcile_type__icontains=query)
+                Q(vehicle_type__icontains=query)
             )
 
         # data summary queries
