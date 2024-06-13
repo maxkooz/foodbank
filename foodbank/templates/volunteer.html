@@ -100,6 +100,7 @@
 <h1>Volunteers</h1>
 <!-- Search entities -->
 <div class="form-container">
+    <h5><em>Search for volunteers by their name, address, or contact information. Add new volunteers or delete current ones, and view the number of volunteers in each city.</em></h5>
     <form method="GET" action="{% url 'foodbank:volunteers' %}">
         <p>Search by any attribute</p>
         <input type="text" name="q" placeholder="Filter by text fields..." value="{{ query }}">
