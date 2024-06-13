@@ -23,7 +23,7 @@
         }
         .form-container, .data-summary, .add-volunteer, .main-page {
             width: 80%;
-            max-width: 1200px;
+            max-width: 1500px;
             margin-bottom: 20px;
         }
         form {
@@ -54,7 +54,7 @@
             padding: 10px 20px;
             font-size: 14px;
             cursor: pointer;
-            width: 100%;
+            width: auto;
             box-sizing: border-box;
             border: none;
             border-radius: 5px;
@@ -77,10 +77,18 @@
         th, td {
             padding: 10px;
             border: 1px solid #ccc;
-            text-align: left;
+            text-align: middle;
         }
         th {
             background-color: #f4f4f4;
+        }
+        td form {
+            display: flex;
+            flex-direction: column;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
         }
         a {
             text-decoration: none;
@@ -92,10 +100,12 @@
 <h1>Volunteers</h1>
 <!-- Search entities -->
 <div class="form-container">
+    <h5><em>Search for volunteers by their name, address, or contact information. Add new volunteers or delete current ones, and view the number of volunteers in each city.</em></h5>
     <form method="GET" action="{% url 'foodbank:volunteers' %}">
         <p>Search by any attribute</p>
         <input type="text" name="q" placeholder="Filter by text fields..." value="{{ query }}">
-        <button type="submit">Search</button>
+        <button type="submit" style="width: 100%;">Search</button>
+
     </form>
 </div>
 
@@ -113,7 +123,7 @@
             <th>Zip Code</th>
             <th>Phone Number</th>
             <th>Email</th>
-            <th>Action</th>
+            <th style="width: 200px;">Action</th>
         </tr>
         </thead>
         <tbody>
@@ -132,10 +142,12 @@
                 <td><input type="text" name="email" value="{{ volunteer.email }}"></td>
                 <td>
                     <input type="hidden" name="volunteer_id" value="{{ volunteer.id }}">
-                    <!-- Button to edit entity -->
-                    <button type="submit" name="edit">Save Edits</button>
-                    <!-- Button to delete entity -->
-                    <button type="submit" name="delete">Delete</button>
+                    <div class="button-group">
+                        <!-- Button to edit entity -->
+                        <button type="submit" name="edit">Save Edits</button>
+                        <!-- Button to delete entity -->
+                        <button type="submit" name="delete">Delete</button>
+                    </div>
                 </td>
             </form>
         </tr>
@@ -181,20 +193,21 @@
         <label for="city">City:</label>
         <input type="text" id="city" name="city">
         <label for="home_state">State:</label>
-        <input type="text" id="home_state" name="home_state">
+        <input type="text" id="home_state" name="home_state" maxlength="2">
         <label for="zip_code">Zip Code:</label>
         <input type="text" id="zip_code" name="zip_code">
         <label for="phone_number">Phone Number:</label>
         <input type="text" id="phone_number" name="phone_number">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email">
-        <button type="submit" name="add">Add Volunteer</button>
+        <button type="submit" name="add" style="width: 100%;">Add Volunteer</button>
+
     </form>
 </div>
 
 <div class="main-page">
     <h2>Return to Main Page</h2>
-    <button onclick="location.href='{% url 'foodbank:main_page' %}'" style="text-decoration: none; color: inherit;">Main Page</button>
+    <button onclick="location.href='{% url 'foodbank:main_page' %}'" style="width: 100%;">Main Page</button>
 </div>
 </body>
 </html>

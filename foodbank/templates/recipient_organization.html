@@ -23,7 +23,7 @@
         }
         .form-container, .table-container, .add-organization, .main-page {
             width: 80%;
-            max-width: 1200px;
+            max-width: 1500px;
             margin-bottom: 20px;
         }
         form {
@@ -77,7 +77,7 @@
         th, td {
             padding: 10px;
             border: 1px solid #ccc;
-            text-align: left;
+            text-align: middle;
         }
         th {
             background-color: #f4f4f4;
@@ -86,12 +86,17 @@
             text-decoration: none;
             color: inherit;
         }
+        .button-container {
+            display: flex;
+            gap: 10px; /* Adjust the gap between buttons */
+        }
     </style>
 </head>
 <body>
 <h1>Recipient Organizations</h1>
 
 <div class="table-container">
+    <h5><em>View recipient organizations' information, including their name, location, and contact details. Add, edit, or delete organizations' information.</em></h5>
     <table style="table-layout: fixed;">
         <thead>
         <tr>
@@ -119,8 +124,10 @@
                     <td><input type="text" name="phone_number" value="{{ organization.phone_number }}"></td>
                     <td><input type="text" name="email" value="{{ organization.email }}"></td>
                     <td>
-                        <button type="submit" name="save">Save</button>
-                        <button type="submit" formaction="{% url 'foodbank:recipient_organization_delete' %}" name="delete">Delete</button>
+                        <div class="button-container">
+                            <button type="submit" name="save">Save</button>
+                            <button type="submit" formaction="{% url 'foodbank:recipient_organization_delete' %}" name="delete">Delete</button>
+                        </div>
                     </td>
                 </form>
             </tr>
@@ -153,7 +160,7 @@
 
 <div class="main-page">
     <h2>Return to Main Page</h2>
-    <button><a href="{% url 'foodbank:main_page' %}" style="text-decoration: none; color: inherit;">Main Page</a></button>
+    <button onclick="location.href='{% url 'foodbank:main_page' %}'">Main Page</button>
 </div>
 
 </body>

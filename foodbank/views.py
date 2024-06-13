@@ -241,7 +241,7 @@ class FoodBankView(LoginRequiredMixin, generic.ListView):
                 Q(street_address__icontains=query) |
                 Q(city__icontains=query) |
                 Q(home_state__icontains=query) |
-                Q(zip_code_icontains=query) |
+                Q(zip_code__icontains=query) |
                 Q(phone_number__icontains=query) |
                 Q(email__icontains=query)
             )
@@ -487,7 +487,8 @@ def volunteer_task_view(request):
         shifts = shifts.filter(
             Q(volunteer__first_name__icontains=query) |  # Search by volunteer first name
             Q(volunteer__last_name__icontains=query) |   # Search by volunteer last name
-            Q(task__description__icontains=query)        # Search by task description
+            Q(task__description__icontains=query) |      # Search by task description
+            Q(task__associated_food_bank__city__icontains=query)  # Search by food bank city
         )
 
     if request.method == 'POST':
@@ -543,7 +544,7 @@ class VehicleView(LoginRequiredMixin, generic.ListView):
     
     def get_foreign_queryset(self):
         return self.foreign_model.objects.all()
-    
+
     def get(self, req):
         error_msg = req.GET.get('error_msg') if 'error_msg' in req.GET else None
         entities = self.get_queryset()
@@ -552,12 +553,16 @@ class VehicleView(LoginRequiredMixin, generic.ListView):
         query = req.GET.get('q')
         if query:
             entities = entities.filter(
-                Q(vehcile_type__icontains=query)
+                Q(vehicle_type__icontains=query) |
+                Q(driver_volunteer__first_name__icontains=query) |
+                Q(driver_volunteer__last_name__icontains=query) |
+                Q(total_passenger_capacity__icontains=query)
             )
 
         # data summary queries
-        vehicles_per_type = execute_raw_sql("SELECT vehicle_type, COUNT(id) as num_vehicles, SUM(total_passenger_capacity) as cum_capacity FROM foodbank_vehicle GROUP BY vehicle_type;")
-  
+        vehicles_per_type = execute_raw_sql(
+            "SELECT vehicle_type, COUNT(id) as num_vehicles, SUM(total_passenger_capacity) as cum_capacity FROM foodbank_vehicle GROUP BY vehicle_type;")
+
         context = {
             self.context_object_name: entities,
             self.foreign_context_name: foreign_entities,
@@ -660,25 +665,29 @@ class TransitView(LoginRequiredMixin, generic.ListView):
         today = today.strftime("%Y-%m-%d")
         tomorrow = tomorrow.strftime("%Y-%m-%d")
         transits_today = execute_raw_sql(f"SELECT ts.id AS ts_id, ts.current_available_capacity, vo.first_name, vo.last_name, ve.vehicle_type FROM foodbank_transitschedule ts JOIN foodbank_vehicle ve ON ts.vehicle_id=ve.id JOIN foodbank_volunteer vo ON vo.id=ve.driver_volunteer_id WHERE ts.current_available_capacity > 0 AND ts.arrival_date_time BETWEEN '{today}' AND '{tomorrow}';")
-        
 
+        condition = req.GET.get('condition', 'False')
         context = {
             self.context_object_name: entities,
             self.foreign_context_name: foreign_entities,
             'transits_today': transits_today,
             'query': query,
             'error_msg': error_msg,
+            'condition': condition
         }
 
         return render(req, self.template_name, context)
-    
+
     def post(self, request, *args, **kwargs):
-        # current just decrements available capacity on join   
+        # current just decrements available capacity on join
         if 'join' in request.POST:
-            transit_id = request.POST.get('transit_id')
-            transit = self.model.objects.get(id=transit_id)
-            transit.current_available_capacity -= 1
-            transit.save()
+            if not request.session.get('join', False):
+                transit_id = request.POST.get('transit_id')
+                transit = self.model.objects.get(id=transit_id)
+                transit.current_available_capacity -= 1
+                request.session['join'] = True
+
+                transit.save()
 
             return redirect(reverse("foodbank:"+self.context_object_name))
 
