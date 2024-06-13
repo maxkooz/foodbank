@@ -142,9 +142,15 @@
                             <input type="hidden" name="task_id" value="{{ row.t_id }}">
                             <select name="vol_signing_up">
                                 <option value="" selected>Select Volunteer</option>
-                                {% for volunteer in volunteers %}
-                                    <option value="{{ volunteer.id }}">{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
-                                {% endfor %}
+                                {% if user.is_staff %}
+
+                                    {% for volunteer in volunteers %}
+                                        <option value="{{ volunteer.id }}">{{ volunteer.first_name }} {{ volunteer.last_name }}</option>
+                                    {% endfor %}
+                                
+                                    {% else %}
+                                    <option value="{{ user_volunteer.id }}">{{ user_volunteer.first_name }} {{ user_volunteer.last_name }}</option>
+                                    {% endif %}
                             </select>
                             <button type="submit" name="signup">Sign Up</button>
                         </form>

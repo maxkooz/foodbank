@@ -7,11 +7,13 @@ from django.views import generic
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import connection
+from django.http import HttpResponseRedirect
 
 from .models import Volunteer, FoodBank, Task, Volunteer_Task, Vehicle, TransitSchedule, FoodItem, \
     RecipientOrganization, DistributedFoodItem, Donator, FoodGroup
 
 import re
+import json
 from datetime import datetime, timedelta
 from collections import namedtuple
 
@@ -67,7 +69,17 @@ def login_view(request):
     if user is not None:
         login(request, user)
 
-        return redirect(reverse('foodbank:main_page'))
+        vol = Volunteer.objects.filter(
+            first_name=request.user.first_name, 
+            last_name=request.user.last_name,
+            email=user.email
+            )[0]
+        
+        url = reverse('foodbank:main_page')
+        response = HttpResponseRedirect(url)
+        response.set_cookie('user_volunteer_id', json.dumps(vol.id))
+
+        return response
     else:
         error_msg = 'Login Failed. Please enter username and password or create new account.'
         return redirect(reverse('foodbank:home')+'?error_msg='+error_msg)
@@ -83,14 +95,37 @@ def sign_up_view(request):
     last_name = request.POST.get("last_name")
     email = request.POST.get("email")
 
+    if "phone_number" in request.POST:
+        phone_number = request.POST.get("phone_number")
+        street_address = request.POST.get("street_address")
+        city = request.POST.get("city")
+        home_state = request.POST.get("home_state")
+        zip_code = request.POST.get("zip_code")
+
+        vol = Volunteer.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            street_address=street_address,
+            city=city,
+            home_state=home_state,
+            zip_code=zip_code,
+            phone_number=phone_number,
+            email=email
+        )
+
     user = User.objects.create_user(username, email=email, password=password)
     user.first_name = first_name
     user.last_name = last_name
+
+    user.volunteer = vol
     user.save()
 
     login(request, user)
 
-    return redirect(reverse('foodbank:main_page'))
+    url = reverse('foodbank:main_page')
+    response = HttpResponseRedirect(url)
+    response.set_cookie('user_volunteer_id', json.dumps(vol.id))
+    return response
 
 def main_page_view(request):
     if not request.user.is_authenticated:
@@ -394,6 +429,8 @@ class TaskView(LoginRequiredMixin, generic.ListView):
                               "FROM foodbank_VolsPerTask vpt JOIN foodbank_task t ON vpt.task_id=t.id JOIN foodbank_foodbank fb ON t.associated_food_bank_id=fb.id "+\
                                 f"WHERE vpt.CurVolsSignedUp < t.max_volunteers AND t.start_date_time > '{cur_datetime}';")
 
+        user_vol_id = json.loads(req.COOKIES.get('user_volunteer_id'))
+        user_vol = Volunteer.objects.get(id=user_vol_id)
         context = {
             self.context_object_name: entities,
             self.foreign_context_name: foreign_entities,
@@ -403,6 +440,7 @@ class TaskView(LoginRequiredMixin, generic.ListView):
             'query': query,
             'error_msg': error_msg,
             'user': req.user,
+            'user_volunteer': user_vol,
         }
 
         return render(req, self.template_name, context)
@@ -510,11 +548,15 @@ def volunteer_task_view(request):
 
         return redirect(reverse('foodbank:volunteer_tasks'))
 
+
+    user_vol_id = json.loads(request.COOKIES.get('user_volunteer_id'))
+    user_vol = Volunteer.objects.get(id=user_vol_id)
     context = {
         'shifts': shifts,
         'volunteers': volunteers,
         'tasks': tasks,
         'query': query,
+        'user_volunteer': user_vol,
     }
     return render(request, 'volunteer_task.html', context)
 
